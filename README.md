@@ -4,6 +4,8 @@ A mobile-first web app where a rider sets ride preferences, compares the 3–4 r
 that fit **side by side** (every preference checked ✓/✗), books one, watches a
 simulated trip, and then rates whether the ride actually met each preference.
 
+**Live:** https://ridechoice-sigma.vercel.app
+
 Built with Next.js 16 (App Router), TypeScript (strict) and Tailwind CSS 4. No
 paid services or API keys: everything runs in the browser.
 
