@@ -10,6 +10,8 @@ function trackConsoleErrors(page: Page): string[] {
 }
 
 test("sign up → preferences → compare → book → trip → rate → history", async ({ page }) => {
+  // The whole journey, end to end, outgrows the default 30 s per-test budget.
+  test.setTimeout(90_000);
   const errors = trackConsoleErrors(page);
   const email = `rider-${Date.now()}@example.com`;
 
@@ -63,6 +65,14 @@ test("sign up → preferences → compare → book → trip → rate → history
   for (let i = 0; i < count; i++) await expect(options.nth(i)).toBeVisible();
   await expect(options.first().getByText(/\d\/5 match/)).toBeVisible();
   await expect(page.getByText("Best match").first()).toBeVisible();
+
+  // Each card expands to an itemised fare
+  const firstCard = options.first();
+  await firstCard.getByRole("button", { name: "Fare & details" }).click();
+  await expect(firstCard.getByText("Base fare")).toBeVisible();
+  await expect(firstCard.getByText("Booking fee")).toBeVisible();
+  await firstCard.getByRole("button", { name: "Fare & details" }).click();
+  await expect(firstCard.getByText("Base fare")).toBeHidden();
 
   // Table toggle shows the same options, then back to columns
   await page.getByRole("radio", { name: "Table" }).click();
@@ -148,6 +158,23 @@ test("sign up → preferences → compare → book → trip → rate → history
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("ride1234");
   await page.getByRole("button", { name: "Log in" }).click();
+
+  // Logging in lands on Home: live map, ride types, recent places
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(page.getByRole("heading", { name: "Ada" })).toBeVisible();
+  const map = page.getByRole("group", { name: /Nearby cars/ });
+  await expect(map.getByRole("button")).toHaveCount(6);
+  // Cars move, so select one from the keyboard (also covers keyboard access).
+  await map.getByRole("button", { name: /^Premium,/ }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("radio", { name: /Premium/ })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByText("Executive cars, top-rated drivers")).toBeVisible();
+  await page.getByRole("radio", { name: /XL/ }).click();
+  await expect(map.getByRole("button", { name: /^XL,/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Riverside Park, 400 River Rd" })).toBeVisible();
+
+  // Tabs: Home → Book → History → Account
+  await page.getByRole("link", { name: "Book", exact: true }).click();
   await expect(page).toHaveURL(/\/ride\/new$/);
   await page.getByRole("link", { name: "History" }).click();
   await expect(page.getByTestId("history-item")).toContainText("Met 4 of 5 preferences");

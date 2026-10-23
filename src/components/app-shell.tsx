@@ -4,14 +4,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { CarIcon, HistoryIcon, SlidersIcon, UserIcon } from "./icons";
+import { CarIcon, HistoryIcon, HomeIcon, UserIcon } from "./icons";
 import { FullPageSpinner, cx } from "./ui";
 
+/** Preferences live under Account, so that tab lights up there too. */
 const TABS = [
-  { href: "/ride/new", match: "/ride", label: "Ride", Icon: CarIcon },
-  { href: "/history", match: "/history", label: "History", Icon: HistoryIcon },
-  { href: "/preferences", match: "/preferences", label: "Preferences", Icon: SlidersIcon },
-  { href: "/account", match: "/account", label: "Account", Icon: UserIcon },
+  { href: "/home", match: ["/home"], label: "Home", Icon: HomeIcon },
+  { href: "/ride/new", match: ["/ride"], label: "Book", Icon: CarIcon },
+  { href: "/history", match: ["/history"], label: "History", Icon: HistoryIcon },
+  { href: "/account", match: ["/account", "/preferences"], label: "Account", Icon: UserIcon },
 ];
 
 export function TabBar() {
@@ -23,7 +24,7 @@ export function TabBar() {
     >
       <ul className="elevated-lg grid grid-cols-4 rounded-full border border-line bg-surface/85 p-1 backdrop-blur-xl backdrop-saturate-150">
         {TABS.map(({ href, match, label, Icon }) => {
-          const active = pathname === match || pathname.startsWith(`${match}/`);
+          const active = match.some((m) => pathname === m || pathname.startsWith(`${m}/`));
           return (
             <li key={href}>
               <Link

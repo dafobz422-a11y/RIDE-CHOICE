@@ -125,3 +125,20 @@ export const PlayIcon = (p: IconProps) => (
     <path d="M7 5v14l11-7z" />
   </svg>
 );
+export const HomeIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M3 11.5 12 4l9 7.5M5.5 10v9.5h13V10" />
+    <path d="M10 19.5v-5h4v5" />
+  </svg>
+);
+export const SparkIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" />
+  </svg>
+);
+export const SearchIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-4-4" />
+  </svg>
+);

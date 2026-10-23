@@ -1,4 +1,4 @@
-import type { Driver, Powertrain, RideOption, Tier, Vehicle } from "./types";
+import type { Driver, FareBreakdown, Powertrain, RideOption, Tier, Vehicle } from "./types";
 
 /** FNV-1a string hash → 32-bit seed. */
 export function hashString(input: string): number {
@@ -148,6 +148,8 @@ function plate(r: () => number): string {
   return `${s}-${String(between(r, [100, 999]))}`;
 }
 
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
 const BASE_FARE = 2.5;
 const PER_KM = 0.95;
 const PER_MIN = 0.26;
@@ -178,7 +180,15 @@ export function generateOptions(pickup: string, dropoff: string): RideOption[] {
       powertrain: spec.powertrain(r()),
     };
     const jitter = 0.94 + r() * 0.12;
-    const price = Math.round((routeFare * spec.multiplier * jitter + BOOKING_FEE) * 100) / 100;
+    // Itemised so the rider can see where the price comes from; lines sum to the price.
+    const fare: FareBreakdown = {
+      base: round2(BASE_FARE),
+      distance: round2(PER_KM * distanceKm),
+      time: round2(PER_MIN * baseDuration),
+      tier: round2(routeFare * spec.multiplier * jitter - routeFare),
+      fee: BOOKING_FEE,
+    };
+    const price = round2(fare.base + fare.distance + fare.time + fare.tier + fare.fee);
     // Larger vehicles drive a touch slower in this model.
     const durationMin = baseDuration + (spec.size === "xl" ? between(r, [0, 3]) : between(r, [-1, 1]));
     return {
@@ -187,6 +197,8 @@ export function generateOptions(pickup: string, dropoff: string): RideOption[] {
       price,
       etaMin: between(r, spec.eta),
       durationMin: Math.max(4, durationMin),
+      distanceKm: Math.round(distanceKm * 10) / 10,
+      fare,
       vehicle,
       driver,
       features: {
@@ -208,3 +220,13 @@ export const SAMPLE_ADDRESSES = [
   "Central Library, 22 Elm Ave",
   "Harbor Market, 9 Pier Way",
 ] as const;
+
+/** Rider-facing description of each tier, for the Home carousel. */
+export const TIER_INFO: Record<Tier, { tagline: string; perks: string[] }> = {
+  Economy: { tagline: "Everyday rides at the best price", perks: ["4 seats", "Often hybrid", "Fastest pickups"] },
+  Comfort: { tagline: "Newer cars, quiet by default", perks: ["Quiet mode", "Climate control", "Extra legroom"] },
+  XL: { tagline: "Room for six and luggage", perks: ["6 seats", "Large boot", "Climate control"] },
+  "Green EV": { tagline: "All-electric, whisper quiet", perks: ["Zero tailpipe", "Quiet mode", "4 seats"] },
+  Access: { tagline: "Ramp-equipped, trained drivers", perks: ["Wheelchair ramp", "5 seats", "Assistance on request"] },
+  Premium: { tagline: "Executive cars, top-rated drivers", perks: ["Luxury sedan", "Quiet mode", "Top drivers"] },
+};

@@ -13,22 +13,31 @@ paid services or API keys: everything runs in the browser.
 
 1. `/` landing → **Create account** (`/signup`) or **Log in** (`/login`)
 2. `/preferences`: max price, max pickup wait, vehicle size, wheelchair access,
-   quiet ride, cabin temperature, eco vehicle, sort priority (onboarding, editable later)
-3. `/ride/new`: pickup and destination, with sample-address quick picks, and
+   quiet ride, cabin temperature, eco vehicle, sort priority (shown at sign-up, editable later
+   from Account)
+3. `/home` (after logging in): greeting, a **Where to?** search, Ride now / Schedule
+   shortcuts, any live or upcoming ride, a prompt to rate your last ride, a live map
+   of nearby cars (tap a car to select its ride type), a swipeable ride-type carousel
+   synced with the map, your recent places (one tap to rebook) and your must-haves
+4. `/ride/new`: pickup and destination, with sample-address quick picks, and
    **Ride now** or **Schedule** (pick a day, part of day and 30-minute slot)
-4. `/ride/compare`: ~600 ms skeleton, then 3–4 options in snap-scrolling columns,
+5. `/ride/compare`: ~600 ms skeleton, then 3–4 options in snap-scrolling columns,
    or an attribute-per-row table. Each option has ✓/✗ plus a text label for every
    preference, a match score, Best match / Cheapest / Fastest badges and its own
-   **Book this ride** button
-5. `/ride/[id]`: confirmation and simulated trip (Driver assigned → Arriving →
+   **Book this ride** button. **Fare & details** expands an itemised fare (base,
+   distance, time, ride type & demand, booking fee) and the vehicle's features
+6. `/ride/[id]`: confirmation and simulated trip (Driver assigned → Arriving →
    On trip → Completed, 3 s each) with **Skip to end**. A scheduled ride shows
    its pickup time and a countdown, with **Add to calendar** (.ics), **Cancel ride**
    and **Start ride now (demo)**
-6. `/ride/[id]/rate`: Yes / Partly / No and an optional note for each preference
+7. `/ride/[id]/rate`: Yes / Partly / No and an optional note for each preference
    snapshotted at booking, 1–5 stars, then a summary ("Met 4 of 5 preferences")
-7. `/history`: upcoming rides first, then past rides with their rating summary;
+8. `/history`: upcoming rides first, then past rides with their rating summary;
    filter by All / Upcoming / Rated / To rate; tap one for details
-8. `/account`: log out, reset demo data
+9. `/account`: profile and ride stats, ride preferences (edit), history and schedule
+   shortcuts, log out, reset demo data
+
+The tab bar is **Home · Book · History · Account**. Preferences live under Account.
 
 ## Run locally
 

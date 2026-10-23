@@ -118,7 +118,7 @@ export default function Landing() {
 
       <div className="sticky bottom-0 -mx-5 flex flex-col gap-3 bg-linear-to-t from-bg from-70% to-bg/0 px-5 pt-8 pb-6">
         {ready && user ? (
-          <LinkButton href="/ride/new" block>
+          <LinkButton href="/home" block>
             Continue as {user.name.split(" ")[0]}
           </LinkButton>
         ) : (

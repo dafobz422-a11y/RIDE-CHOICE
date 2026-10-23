@@ -58,6 +58,7 @@ export default function PreferencesPage() {
     <>
       <PageHeader
         title={onboarding ? "Set your ride preferences" : "Ride preferences"}
+        back={onboarding ? undefined : "/account"}
         subtitle={
           onboarding
             ? "We'll only show rides that fit, and check every preference for you. You can change these anytime."

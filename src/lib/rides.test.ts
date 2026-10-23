@@ -50,3 +50,19 @@ describe("generateOptions", () => {
     }
   });
 });
+
+describe("fare breakdown", () => {
+  it("itemises every option so the lines add up to the price", () => {
+    for (const o of generateOptions("Union Station", "Airport Terminal 1")) {
+      const f = o.fare!;
+      expect(Math.round((f.base + f.distance + f.time + f.tier + f.fee) * 100) / 100).toBe(o.price);
+      expect(o.distanceKm).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("charges more tier uplift for Premium than Economy", () => {
+    const opts = generateOptions("a", "b");
+    const by = Object.fromEntries(opts.map((o) => [o.tier, o.fare!.tier]));
+    expect(by.Premium).toBeGreaterThan(by.Economy);
+  });
+});

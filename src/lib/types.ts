@@ -73,12 +73,25 @@ export interface RideFeatures {
   wheelchairAccessible: boolean;
 }
 
+/** Price lines in dollars; they add up to RideOption.price. */
+export interface FareBreakdown {
+  base: number;
+  distance: number;
+  time: number;
+  /** Tier multiplier and demand, relative to the plain route fare (can be negative). */
+  tier: number;
+  fee: number;
+}
+
 export interface RideOption {
   id: string;
   tier: Tier;
   price: number;
   etaMin: number;
   durationMin: number;
+  /** Absent on bookings saved before itemised fares existed. */
+  distanceKm?: number;
+  fare?: FareBreakdown;
   vehicle: Vehicle;
   driver: Driver;
   features: RideFeatures;

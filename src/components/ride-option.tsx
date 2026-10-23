@@ -1,11 +1,12 @@
 "use client";
 
+import { useId, useState } from "react";
 import { describeOffer, powertrainLabel } from "@/lib/describe";
 import { totalTime, type Badge, type MatchContext, type ShownOption } from "@/lib/matching";
 import { PREF_SHORT, describePref, formatPrice, isHard } from "@/lib/prefs";
 import { formatTime } from "@/lib/schedule";
 import type { PrefKey, Preferences, RideOption } from "@/lib/types";
-import { CheckIcon, ClockIcon, StarIcon, XIcon } from "./icons";
+import { CheckIcon, ChevronRightIcon, ClockIcon, StarIcon, XIcon } from "./icons";
 import { Button, cx } from "./ui";
 import { VehicleArt } from "./vehicle-art";
 
@@ -83,6 +84,80 @@ export function ScoreMeter({ score, total }: { score: number; total: number }) {
       <span className="num text-sm font-bold whitespace-nowrap">
         {score}/{total} <span className="font-medium text-muted">match</span>
       </span>
+    </div>
+  );
+}
+
+function money(n: number): string {
+  return `${n < 0 ? "−" : ""}${Math.abs(n).toFixed(2)}`;
+}
+
+/** Expandable fare breakdown and vehicle details for one option. */
+export function RideDetailsPanel({ option: o, scheduled }: { option: RideOption; scheduled: boolean }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const f = o.fare;
+  const features: [string, string | boolean][] = [
+    ["Seats", String(o.vehicle.seats)],
+    ["Powertrain", powertrainLabel(o)],
+    ["Quiet mode", o.features.quietMode],
+    ["Climate control", o.features.climateControl],
+    ["Wheelchair ramp", o.features.wheelchairAccessible],
+    ["Driver trips", o.driver.trips.toLocaleString()],
+  ];
+  return (
+    <div className="mt-3 rounded-2xl border border-line">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((v) => !v)}
+        className="flex min-h-11 w-full items-center justify-between gap-2 px-3 text-sm font-bold"
+      >
+        Fare &amp; details
+        <ChevronRightIcon size={18} className={cx("text-muted transition-transform duration-200", open && "rotate-90")} />
+      </button>
+      <div id={id} hidden={!open} className="animate-rise border-t border-line px-3 pt-2 pb-3">
+        {f ? (
+          <dl className="num flex flex-col gap-1 text-sm">
+            {(
+              [
+                ["Base fare", f.base],
+                [o.distanceKm ? `Distance · ${o.distanceKm} km` : "Distance", f.distance],
+                [`Time · ${o.durationMin} min`, f.time],
+                [`${o.tier} & demand`, f.tier],
+                ["Booking fee", f.fee],
+              ] as const
+            ).map(([label, value]) => (
+              <div key={label} className="flex justify-between gap-2">
+                <dt className="text-muted">{label}</dt>
+                <dd className="font-semibold">{money(value)}</dd>
+              </div>
+            ))}
+            <div className="mt-1 flex justify-between gap-2 border-t border-line pt-1.5">
+              <dt className="font-bold">Total{scheduled ? " (same as riding now)" : ""}</dt>
+              <dd className="font-extrabold">{formatPrice(o.price)}</dd>
+            </div>
+          </dl>
+        ) : (
+          <p className="text-sm text-muted">Fare breakdown unavailable for this ride.</p>
+        )}
+        <ul className="mt-3 grid grid-cols-2 gap-1.5 text-xs">
+          {features.map(([label, value]) => (
+            <li key={label} className="flex items-center justify-between gap-1 rounded-xl bg-surface-2 px-2.5 py-2">
+              <span className="text-muted">{label}</span>
+              {typeof value === "boolean" ? (
+                <span className={cx("inline-flex items-center gap-0.5 font-bold", value ? "text-success" : "text-muted")}>
+                  {value ? <CheckIcon size={12} strokeWidth={3} /> : <XIcon size={12} strokeWidth={3} />}
+                  {value ? "Yes" : "No"}
+                </span>
+              ) : (
+                <span className="num font-bold">{value}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
@@ -178,6 +253,8 @@ export function OptionCard({
           <PrefCheck key={k} prefKey={k} option={o} prefs={prefs} ctx={ctx} />
         ))}
       </ul>
+
+      <RideDetailsPanel option={o} scheduled={!!scheduledFor} />
 
       <Button
         className="mt-4"

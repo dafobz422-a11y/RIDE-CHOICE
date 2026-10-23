@@ -10,6 +10,8 @@ function trackConsoleErrors(page: Page): string[] {
 }
 
 test("schedule a ride for tomorrow, see it upcoming, cancel it, then start another early", async ({ page }) => {
+  // Two bookings end to end outgrow the default 30 s per-test budget.
+  test.setTimeout(90_000);
   const errors = trackConsoleErrors(page);
 
   await page.goto("/signup");

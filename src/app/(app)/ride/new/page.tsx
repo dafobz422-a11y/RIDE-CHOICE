@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useAsync } from "@/lib/hooks";
+import { takeIntent } from "@/lib/intent";
 import { SAMPLE_ADDRESSES } from "@/lib/rides";
 import { formatSchedule, isValidSchedule } from "@/lib/schedule";
 import { store } from "@/lib/store";
@@ -100,6 +101,12 @@ export default function NewRidePage() {
   const [scheduledFor, setScheduledFor] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ pickup?: string; dropoff?: string; when?: string }>({});
   const [busy, setBusy] = useState(false);
+
+  // Home's "Schedule" shortcut opens straight into the picker.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (takeIntent() === "schedule") setWhen("later");
+  }, []);
 
   // Prefill the last search once it loads; drop a schedule that has gone stale.
   useEffect(() => {

@@ -22,7 +22,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
   // Already signed in: skip the form.
   useEffect(() => {
-    if (ready && user && !busy) router.replace(user.onboarded ? "/ride/new" : "/preferences");
+    if (ready && user && !busy) router.replace(user.onboarded ? "/home" : "/preferences");
   }, [ready, user, busy, router]);
 
   const validate = (): Errors =>
@@ -54,7 +54,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         router.push("/preferences");
       } else {
         const u = await login(email, password);
-        router.push(u.onboarded ? "/ride/new" : "/preferences");
+        router.push(u.onboarded ? "/home" : "/preferences");
       }
     } catch (err) {
       setBusy(false);

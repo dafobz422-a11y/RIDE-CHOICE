@@ -262,3 +262,20 @@ dialog.sheet::backdrop {
   background: rgb(4 16 13 / 0.55);
   animation: fade 200ms ease-out both;
 }
+
+/* Pulsing rings around the rider's pin on the Home map. */
+@keyframes map-ping {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+.map-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: map-ping 2s ease-out infinite;
+}
