@@ -7,10 +7,11 @@ import { useAuth } from "@/lib/auth-context";
 import { selectOptions, totalTime } from "@/lib/matching";
 import { DEFAULT_PREFERENCES, PREF_SHORT, PRIORITY_LABEL, SIZE_LABEL, activeKeys, formatPrice } from "@/lib/prefs";
 import { TIERS, generateOptions } from "@/lib/rides";
+import { formatSchedule, isValidSchedule } from "@/lib/schedule";
 import { newId, store } from "@/lib/store";
 import type { Preferences, Priority, RideOption, TripDraft } from "@/lib/types";
 import { haptic, Sheet, useToast } from "@/components/feedback";
-import { ClockIcon, ColumnsIcon, FlagIcon, PinIcon, SlidersIcon, TableIcon } from "@/components/icons";
+import { CalendarIcon, ClockIcon, ColumnsIcon, FlagIcon, PinIcon, SlidersIcon, TableIcon } from "@/components/icons";
 import { MustHaveControls, opts } from "@/components/pref-controls";
 import { CompareTable, MetMark, OptionCard, ScoreMeter } from "@/components/ride-option";
 import { Button, EmptyState, LinkButton, PageHeader, Segmented, Skeleton, cx } from "@/components/ui";
@@ -51,8 +52,16 @@ export default function ComparePage() {
   const draft = data?.draft ?? null;
   const options = useMemo(() => (draft ? generateOptions(draft.pickup, draft.dropoff) : []), [draft]);
   const prefs = override ?? data?.saved ?? DEFAULT_PREFERENCES;
-  const selection = useMemo(() => selectOptions(options, prefs), [options, prefs]);
-  const tuningCount = useMemo(() => (tuning ? selectOptions(options, tuning).eligibleCount : 0), [options, tuning]);
+  // A scheduled pickup that has since passed falls back to "now", with a notice.
+  const rawSchedule = draft?.scheduledFor ?? null;
+  const scheduleStale = !!rawSchedule && !isValidSchedule(rawSchedule, new Date());
+  const scheduledFor = rawSchedule && !scheduleStale ? rawSchedule : null;
+  const scheduled = scheduledFor !== null;
+  const selection = useMemo(() => selectOptions(options, prefs, { scheduled }), [options, prefs, scheduled]);
+  const tuningCount = useMemo(
+    () => (tuning ? selectOptions(options, tuning, { scheduled }).eligibleCount : 0),
+    [options, tuning, scheduled],
+  );
 
   function onScroll() {
     const el = scroller.current;
@@ -105,11 +114,13 @@ export default function ComparePage() {
       option: pending,
       preferencesSnapshot: prefs,
       activeKeys: activeKeys(prefs),
-      status: "assigned",
+      status: scheduled ? "scheduled" : "assigned",
       createdAt: new Date().toISOString(),
+      scheduledFor,
+      ...(scheduled ? {} : { startedAt: new Date().toISOString() }),
     });
     haptic([10, 40, 20]);
-    toast(`${pending.tier} booked`);
+    toast(scheduled ? `${pending.tier} scheduled` : `${pending.tier} booked`);
     router.push(`/ride/${id}`);
   }
 
@@ -172,6 +183,11 @@ export default function ComparePage() {
         subtitle={
           <>
             <span className="font-semibold text-ink">{draft.pickup}</span> → <span className="font-semibold text-ink">{draft.dropoff}</span>
+            {scheduledFor && (
+              <span className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-bold text-accent-soft-fg">
+                <CalendarIcon size={13} /> Scheduled · {formatSchedule(scheduledFor, new Date())}
+              </span>
+            )}
           </>
         }
       />
@@ -216,6 +232,14 @@ export default function ComparePage() {
             </Link>
           )}
         </p>
+        {scheduleStale && (
+          <p className="rounded-2xl bg-warn-soft px-3 py-2 text-sm font-medium text-warn">
+            Your scheduled time has passed, so these are rides for right now.{" "}
+            <Link href="/ride/new" className="font-bold underline underline-offset-4">
+              Pick a new time
+            </Link>
+          </p>
+        )}
         {eligibleCount < 3 && (
           <p className="animate-rise rounded-2xl bg-warn-soft px-3 py-2 text-sm font-medium text-warn">
             {eligibleCount === 0 ? "No rides" : `Only ${eligibleCount} ride${eligibleCount === 1 ? "" : "s"}`} met every
@@ -276,6 +300,7 @@ export default function ComparePage() {
                   busy={busy}
                   position={i + 1}
                   count={shown.length}
+                  scheduledFor={scheduledFor}
                 />
               </div>
             ))}
@@ -309,6 +334,7 @@ export default function ComparePage() {
               setPending(o);
             }}
             busy={busy}
+            scheduledFor={scheduledFor}
           />
         </div>
       )}
@@ -359,7 +385,15 @@ export default function ComparePage() {
                 <FlagIcon size={16} className="text-accent" /> {draft.dropoff}
               </li>
               <li className="num flex items-center gap-2 text-muted">
-                <ClockIcon size={16} /> Pickup in {pending.etaMin} min · arrive in ~{totalTime(pending)} min
+                {scheduledFor ? (
+                  <>
+                    <CalendarIcon size={16} /> Pickup {formatSchedule(scheduledFor, new Date())} · ~{totalTime(pending, { scheduled })} min trip
+                  </>
+                ) : (
+                  <>
+                    <ClockIcon size={16} /> Pickup in {pending.etaMin} min · arrive in ~{totalTime(pending)} min
+                  </>
+                )}
               </li>
             </ul>
             <ScoreMeter score={pending.matchScore} total={keys.length} />

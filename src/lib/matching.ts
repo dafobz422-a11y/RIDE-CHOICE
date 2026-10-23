@@ -2,12 +2,17 @@ import { activeKeys, isHard } from "./prefs";
 import { TIER_COMFORT } from "./rides";
 import type { PrefKey, Preferences, Priority, RideOption } from "./types";
 
-export function meetsPreference(o: RideOption, key: PrefKey, p: Preferences): boolean {
+/** A scheduled ride reserves its driver, so pickup wait doesn't apply. */
+export interface MatchContext {
+  scheduled?: boolean;
+}
+
+export function meetsPreference(o: RideOption, key: PrefKey, p: Preferences, ctx: MatchContext = {}): boolean {
   switch (key) {
     case "price":
       return o.price <= p.maxPrice;
     case "wait":
-      return o.etaMin <= p.maxWaitMin;
+      return ctx.scheduled === true || o.etaMin <= p.maxWaitMin;
     case "size":
       return p.vehicleSize === "any" || o.vehicle.size === p.vehicleSize;
     case "accessible":
@@ -22,11 +27,11 @@ export function meetsPreference(o: RideOption, key: PrefKey, p: Preferences): bo
 }
 
 /** Fill in `meets` (active keys only) and `matchScore` (count of met keys). */
-export function evaluate(o: RideOption, p: Preferences): RideOption {
+export function evaluate(o: RideOption, p: Preferences, ctx: MatchContext = {}): RideOption {
   const meets: Partial<Record<PrefKey, boolean>> = {};
   let score = 0;
   for (const key of activeKeys(p)) {
-    const ok = meetsPreference(o, key, p);
+    const ok = meetsPreference(o, key, p, ctx);
     meets[key] = ok;
     if (ok) score++;
   }
@@ -41,14 +46,15 @@ export function isEligible(o: RideOption): boolean {
   return failedHardKeys(o).length === 0;
 }
 
-export function totalTime(o: RideOption): number {
-  return o.etaMin + o.durationMin;
+/** Minutes until arrival; a scheduled pickup has no wait to add. */
+export function totalTime(o: RideOption, ctx: MatchContext = {}): number {
+  return (ctx.scheduled ? 0 : o.etaMin) + o.durationMin;
 }
 
-export function compareByPriority(priority: Priority) {
+export function compareByPriority(priority: Priority, ctx: MatchContext = {}) {
   return (a: RideOption, b: RideOption): number => {
     const byPrice = a.price - b.price;
-    const byTime = totalTime(a) - totalTime(b);
+    const byTime = totalTime(a, ctx) - totalTime(b, ctx);
     const byComfort = TIER_COMFORT[b.tier] - TIER_COMFORT[a.tier];
     const byScore = b.matchScore - a.matchScore;
     const chain =
@@ -65,8 +71,8 @@ export function compareByPriority(priority: Priority) {
 /** How far an option misses the hard preferences, for ranking near misses. */
 export function missDistance(o: RideOption, p: Preferences): number {
   let d = failedHardKeys(o).length * 10;
-  if (o.price > p.maxPrice) d += (o.price - p.maxPrice) / p.maxPrice;
-  if (o.etaMin > p.maxWaitMin) d += (o.etaMin - p.maxWaitMin) / p.maxWaitMin;
+  if (o.meets.price === false) d += (o.price - p.maxPrice) / p.maxPrice;
+  if (o.meets.wait === false) d += (o.etaMin - p.maxWaitMin) / p.maxWaitMin;
   return d;
 }
 
@@ -91,9 +97,9 @@ export const MAX_SHOWN = 4;
  * Score every option, keep the eligible ones sorted by priority (max 4), and if
  * fewer than 3 qualify pad with the nearest misses so the rider can compare.
  */
-export function selectOptions(raw: RideOption[], p: Preferences): Selection {
-  const scored = raw.map((o) => evaluate(o, p));
-  const cmp = compareByPriority(p.priority);
+export function selectOptions(raw: RideOption[], p: Preferences, ctx: MatchContext = {}): Selection {
+  const scored = raw.map((o) => evaluate(o, p, ctx));
+  const cmp = compareByPriority(p.priority, ctx);
   const eligible = scored.filter(isEligible).sort(cmp);
   const misses = scored
     .filter((o) => !isEligible(o))
@@ -111,17 +117,17 @@ export function selectOptions(raw: RideOption[], p: Preferences): Selection {
       badges: [] as Badge[],
     })),
   ];
-  assignBadges(shown);
+  assignBadges(shown, ctx);
   return { shown, eligibleCount: eligible.length };
 }
 
 /** Badges go to eligible options only; ties resolve to the earlier (higher-sorted) one. */
-export function assignBadges(shown: ShownOption[]): void {
+export function assignBadges(shown: ShownOption[], ctx: MatchContext = {}): void {
   const pool = shown.filter((s) => s.eligible);
   if (pool.length === 0) return;
   const best = (score: (s: ShownOption) => number) =>
     pool.reduce((acc, s) => (score(s) < score(acc) ? s : acc));
   best((s) => -s.option.matchScore).badges.push("Best match");
   best((s) => s.option.price).badges.push("Cheapest");
-  best((s) => totalTime(s.option)).badges.push("Fastest");
+  best((s) => totalTime(s.option, ctx)).badges.push("Fastest");
 }

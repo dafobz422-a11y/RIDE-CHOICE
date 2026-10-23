@@ -16,7 +16,10 @@ function carTarget(stage: BookingStatus, fraction: number): { path: "approach" |
     case "on_trip":
       return { path: "route", t: fraction };
     case "completed":
+    case "cancelled":
       return { path: "route", t: 1 };
+    case "scheduled":
+      return { path: "approach", t: 0 };
   }
 }
 

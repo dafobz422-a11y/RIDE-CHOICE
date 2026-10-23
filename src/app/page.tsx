@@ -89,8 +89,8 @@ export default function Landing() {
         <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-3 py-1 text-xs font-bold text-accent-soft-fg backdrop-blur">
           <span className="size-1.5 rounded-full bg-accent" /> Ride on your terms
         </p>
-        <h1 className="mt-4 font-display text-[2.85rem] leading-[1.02] font-semibold">
-          Compare rides by what you <em className="text-gradient pr-1 font-medium">actually</em> care about.
+        <h1 className="mt-4 font-display text-[2.55rem] leading-[1.04] font-bold">
+          Compare rides by what you <span className="text-gradient">actually</span> care about.
         </h1>
         <p className="mt-4 text-[1.05rem] leading-relaxed text-muted">
           Set your preferences once. See the 3–4 rides that fit, side by side, then book the one you want.

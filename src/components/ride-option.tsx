@@ -1,11 +1,13 @@
 "use client";
 
 import { describeOffer, powertrainLabel } from "@/lib/describe";
-import { totalTime, type Badge, type ShownOption } from "@/lib/matching";
+import { totalTime, type Badge, type MatchContext, type ShownOption } from "@/lib/matching";
 import { PREF_SHORT, describePref, formatPrice, isHard } from "@/lib/prefs";
+import { formatTime } from "@/lib/schedule";
 import type { PrefKey, Preferences, RideOption } from "@/lib/types";
 import { CheckIcon, ClockIcon, StarIcon, XIcon } from "./icons";
 import { Button, cx } from "./ui";
+import { VehicleArt } from "./vehicle-art";
 
 export function MetMark({ met, size = 16 }: { met: boolean; size?: number }) {
   return (
@@ -21,7 +23,17 @@ export function MetMark({ met, size = 16 }: { met: boolean; size?: number }) {
   );
 }
 
-export function PrefCheck({ prefKey, option, prefs }: { prefKey: PrefKey; option: RideOption; prefs: Preferences }) {
+export function PrefCheck({
+  prefKey,
+  option,
+  prefs,
+  ctx = {},
+}: {
+  prefKey: PrefKey;
+  option: RideOption;
+  prefs: Preferences;
+  ctx?: MatchContext;
+}) {
   const met = option.meets[prefKey] === true;
   return (
     <li className="flex items-start gap-2.5 py-1.5">
@@ -34,7 +46,7 @@ export function PrefCheck({ prefKey, option, prefs }: { prefKey: PrefKey; option
           </span>
         </span>
         <span className="num block text-muted">
-          {describeOffer(prefKey, option)} <span aria-hidden>·</span> you asked: {describePref(prefKey, prefs).toLowerCase()}
+          {describeOffer(prefKey, option, ctx)} <span aria-hidden>·</span> you asked: {describePref(prefKey, prefs).toLowerCase()}
         </span>
       </span>
     </li>
@@ -75,10 +87,6 @@ export function ScoreMeter({ score, total }: { score: number; total: number }) {
   );
 }
 
-export function arrivalLabel(o: RideOption): string {
-  return `${totalTime(o)} min to destination`;
-}
-
 export function OptionCard({
   shown,
   keys,
@@ -87,6 +95,7 @@ export function OptionCard({
   busy,
   position,
   count,
+  scheduledFor = null,
 }: {
   shown: ShownOption;
   keys: PrefKey[];
@@ -95,8 +104,11 @@ export function OptionCard({
   busy: boolean;
   position: number;
   count: number;
+  /** ISO pickup time when this search is for a scheduled ride. */
+  scheduledFor?: string | null;
 }) {
   const { option: o, eligible, failed, badges } = shown;
+  const ctx: MatchContext = { scheduled: !!scheduledFor };
   return (
     <article
       data-testid="ride-option"
@@ -116,7 +128,11 @@ export function OptionCard({
           <span className="rounded-full bg-danger-soft px-2.5 py-1 text-xs font-bold text-danger">Near miss</span>
         )}
       </div>
-      <div className="mt-2 flex items-end justify-between gap-2">
+      <div className="relative -mx-1 mt-1 flex h-20 items-end justify-center overflow-hidden rounded-2xl bg-linear-to-b from-accent-soft/70 to-surface-2/40">
+        <span aria-hidden className="absolute inset-x-6 bottom-3 h-px bg-line-strong" />
+        <VehicleArt tier={o.tier} className="relative mb-1.5 h-14 w-auto" />
+      </div>
+      <div className="mt-3 flex items-end justify-between gap-2">
         <div>
           <h3 className="font-display text-2xl font-semibold">{o.tier}</h3>
           <p className="text-sm text-muted">
@@ -128,9 +144,9 @@ export function OptionCard({
 
       <dl className="num mt-3 grid grid-cols-2 gap-2 text-sm">
         <div className="rounded-2xl bg-surface-2/80 px-3 py-2.5">
-          <dt className="text-xs text-muted">Pickup in</dt>
+          <dt className="text-xs text-muted">{scheduledFor ? "Pickup at" : "Pickup in"}</dt>
           <dd className="flex items-center gap-1 font-bold">
-            <ClockIcon size={14} /> {o.etaMin} min
+            <ClockIcon size={14} /> {scheduledFor ? formatTime(new Date(scheduledFor)) : `${o.etaMin} min`}
           </dd>
         </div>
         <div className="rounded-2xl bg-surface-2/80 px-3 py-2.5">
@@ -159,7 +175,7 @@ export function OptionCard({
       </div>
       <ul className="mt-2 flex-1 divide-y divide-line" aria-label="Preference checks">
         {keys.map((k) => (
-          <PrefCheck key={k} prefKey={k} option={o} prefs={prefs} />
+          <PrefCheck key={k} prefKey={k} option={o} prefs={prefs} ctx={ctx} />
         ))}
       </ul>
 
@@ -182,12 +198,15 @@ export function CompareTable({
   keys,
   onBook,
   busy,
+  scheduledFor = null,
 }: {
   shown: ShownOption[];
   keys: PrefKey[];
   onBook: (o: RideOption) => void;
   busy: boolean;
+  scheduledFor?: string | null;
 }) {
+  const ctx: MatchContext = { scheduled: !!scheduledFor };
   const head = "sticky left-0 z-10 bg-surface px-3 py-2.5 text-left text-xs font-semibold text-muted";
   const cell = "px-3 py-2.5 align-top";
   return (
@@ -210,9 +229,15 @@ export function CompareTable({
         </thead>
         <tbody className="divide-y divide-line">
           <Row label="Price" head={head} cell={cell} shown={shown} render={(o) => <strong>{formatPrice(o.price)}</strong>} />
-          <Row label="Pickup in" head={head} cell={cell} shown={shown} render={(o) => `${o.etaMin} min`} />
+          <Row
+            label={scheduledFor ? "Pickup at" : "Pickup in"}
+            head={head}
+            cell={cell}
+            shown={shown}
+            render={(o) => (scheduledFor ? formatTime(new Date(scheduledFor)) : `${o.etaMin} min`)}
+          />
           <Row label="Trip" head={head} cell={cell} shown={shown} render={(o) => `${o.durationMin} min`} />
-          <Row label="Total time" head={head} cell={cell} shown={shown} render={(o) => `${totalTime(o)} min`} />
+          <Row label="Total time" head={head} cell={cell} shown={shown} render={(o) => `${totalTime(o, ctx)} min`} />
           <Row label="Vehicle" head={head} cell={cell} shown={shown} render={(o) => `${o.vehicle.make} ${o.vehicle.model}`} />
           <Row
             label="Match"
@@ -246,7 +271,7 @@ export function CompareTable({
                       <span className={cx("block text-xs font-bold uppercase", met ? "text-success" : "text-danger")}>
                         {met ? "Meets" : "Misses"}
                       </span>
-                      <span className="block text-xs text-muted">{describeOffer(k, o)}</span>
+                      <span className="block text-xs text-muted">{describeOffer(k, o, ctx)}</span>
                     </span>
                   </span>
                 );

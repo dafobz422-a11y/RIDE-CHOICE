@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useId, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
 import { ArrowLeftIcon, CarIcon, CheckIcon, MinusIcon, XIcon } from "./icons";
 
 export function cx(...parts: (string | false | null | undefined)[]): string {
@@ -60,8 +60,22 @@ export function PageHeader({
   back?: string;
   action?: ReactNode;
 }) {
+  // Frost the header once content scrolls beneath it.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-3">
+    <header
+      className={cx(
+        "sticky top-0 z-30 border-b px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-3 transition-[background-color,border-color,backdrop-filter] duration-300",
+        scrolled ? "border-line bg-bg/90 backdrop-blur-xl backdrop-saturate-150" : "border-transparent",
+      )}
+    >
       <div className="flex items-start gap-3">
         {back && (
           <Link
@@ -214,7 +228,7 @@ export function Switch({
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div aria-hidden className={cx("animate-pulse rounded-xl bg-surface-2", className)} />;
+  return <div aria-hidden className={cx("shimmer rounded-xl", className)} />;
 }
 
 export function EmptyState({

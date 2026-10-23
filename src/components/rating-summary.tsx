@@ -1,4 +1,5 @@
-import { describePref, PREF_SHORT } from "@/lib/prefs";
+import { askedFor } from "@/lib/describe";
+import { PREF_SHORT } from "@/lib/prefs";
 import { ANSWER_LABEL, summarizeRating } from "@/lib/rating";
 import type { Booking, PrefAnswer, Rating } from "@/lib/types";
 import { CheckIcon, MinusIcon, StarIcon, XIcon } from "./icons";
@@ -52,7 +53,7 @@ export function RatingSummaryCard({ booking, rating }: { booking: Booking; ratin
                   <span className="font-semibold">{PREF_SHORT[k]}</span>
                   <span className="font-bold">{a ? ANSWER_LABEL[a] : "Not rated"}</span>
                 </span>
-                <span className="block text-muted">You asked: {describePref(k, booking.preferencesSnapshot)}</span>
+                <span className="block text-muted">You asked: {askedFor(k, booking)}</span>
                 {rating.notes[k] && <span className="mt-1 block italic">“{rating.notes[k]}”</span>}
               </span>
             </li>

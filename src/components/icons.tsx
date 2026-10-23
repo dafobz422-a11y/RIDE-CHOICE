@@ -109,3 +109,19 @@ export const SwapIcon = (p: IconProps) => (
     <path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3" />
   </svg>
 );
+export const CalendarIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <rect x="3" y="5" width="18" height="16" rx="3" />
+    <path d="M3 10h18M8 3v4M16 3v4" />
+  </svg>
+);
+export const DownloadIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+  </svg>
+);
+export const PlayIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M7 5v14l11-7z" />
+  </svg>
+);

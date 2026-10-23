@@ -4,7 +4,8 @@ import { useParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useAsync } from "@/lib/hooks";
-import { PREF_SHORT, describePref } from "@/lib/prefs";
+import { askedFor } from "@/lib/describe";
+import { PREF_SHORT } from "@/lib/prefs";
 import { ANSWER_LABEL, isRatingComplete, summarizeRating } from "@/lib/rating";
 import { store } from "@/lib/store";
 import type { Booking, PrefAnswer, PrefKey, Rating } from "@/lib/types";
@@ -131,7 +132,7 @@ function RateForm({ booking, existing }: { booking: Booking; existing: Rating | 
             <Card key={k} className={cx("flex flex-col gap-3", invalid && "border-danger")}>
               <fieldset aria-describedby={invalid ? `err-${k}` : undefined}>
                 <legend className="mb-0.5 font-semibold">{PREF_SHORT[k]}</legend>
-                <p className="mb-3 text-sm text-muted">You asked: {describePref(k, booking.preferencesSnapshot)}</p>
+                <p className="mb-3 text-sm text-muted">You asked: {askedFor(k, booking)}</p>
                 <div className="grid grid-cols-3 gap-2">
                   {ANSWERS.map((a) => {
                     const checked = value === a;

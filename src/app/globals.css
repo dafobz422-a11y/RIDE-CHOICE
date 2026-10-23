@@ -93,10 +93,9 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Fraunces: soft, slightly wonky optical size for headlines. */
+/* Sora headlines: tight tracking reads as crafted at display sizes. */
 .font-display {
-  font-variation-settings: "SOFT" 100, "WONK" 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
 }
 
 /* Soft, colour-tinted elevation instead of hard borders. */
@@ -221,6 +220,27 @@ input[type="range"] {
 .animate-fade {
   animation: fade 220ms ease-out both;
 }
+/* Shimmer for loading skeletons. */
+@keyframes shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+.shimmer {
+  background: linear-gradient(
+      100deg,
+      transparent 20%,
+      color-mix(in oklab, var(--surface) 75%, transparent) 50%,
+      transparent 80%
+    )
+    var(--surface-2);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+
 .animate-pop {
   animation: pop 260ms ease-out;
 }

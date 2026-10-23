@@ -89,3 +89,12 @@ describe("historyStats", () => {
     expect(historyStats([])).toEqual({ rides: 0, rated: 0, avgStars: null, metPct: null });
   });
 });
+
+describe("scheduled and cancelled bookings", () => {
+  const start = "2026-01-01T00:00:00.000Z";
+  it("hold their status regardless of the clock", () => {
+    expect(stageAt(start, Date.parse(start) + STAGE_MS * 10, "scheduled")).toBe("scheduled");
+    expect(tripProgress(start, Date.parse(start) + STAGE_MS * 10, "cancelled").stage).toBe("cancelled");
+    expect(tripProgress(start, Date.parse(start), "scheduled")).toEqual({ stage: "scheduled", fraction: 0, secondsLeft: 0 });
+  });
+});

@@ -176,3 +176,24 @@ describe("totalTime", () => {
     expect(totalTime(option({ id: "a", etaMin: 4, durationMin: 11 }))).toBe(15);
   });
 });
+
+describe("scheduled rides", () => {
+  const slow = option({ id: "slow", price: 15, etaMin: 18, durationMin: 20 });
+  const quick = option({ id: "quick", price: 25, etaMin: 2, durationMin: 18 });
+  const p = prefs({ maxWaitMin: 5, priority: "fastest" });
+
+  it("treat pickup wait as met because the driver is reserved", () => {
+    expect(meetsPreference(slow, "wait", p)).toBe(false);
+    expect(meetsPreference(slow, "wait", p, { scheduled: true })).toBe(true);
+    const { shown, eligibleCount } = selectOptions([slow, quick], p, { scheduled: true });
+    expect(eligibleCount).toBe(2);
+    expect(shown.every((s) => s.eligible)).toBe(true);
+  });
+
+  it("rank fastest by trip time alone", () => {
+    expect(selectOptions([quick, slow], p).shown[0].option.id).toBe("quick");
+    const scheduled = selectOptions([quick, slow], prefs({ priority: "fastest", maxWaitMin: 20 }), { scheduled: true });
+    expect(scheduled.shown[0].option.id).toBe("quick");
+    expect(totalTime(slow, { scheduled: true })).toBe(20);
+  });
+});

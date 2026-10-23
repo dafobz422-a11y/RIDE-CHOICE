@@ -90,9 +90,12 @@ export interface RideOption {
 export interface TripDraft {
   pickup: string;
   dropoff: string;
+  /** ISO time for a scheduled pickup; absent or null means "now". */
+  scheduledFor?: string | null;
 }
 
-export type BookingStatus = "assigned" | "arriving" | "on_trip" | "completed";
+/** "scheduled" waits for its pickup time; the next four are the live trip. */
+export type BookingStatus = "scheduled" | "assigned" | "arriving" | "on_trip" | "completed" | "cancelled";
 
 export interface Booking {
   id: string;
@@ -105,6 +108,10 @@ export interface Booking {
   activeKeys: PrefKey[];
   status: BookingStatus;
   createdAt: string;
+  /** Pickup time for a scheduled ride. */
+  scheduledFor?: string | null;
+  /** When the live trip began; older bookings fall back to createdAt. */
+  startedAt?: string;
 }
 
 export type PrefAnswer = "yes" | "partly" | "no";

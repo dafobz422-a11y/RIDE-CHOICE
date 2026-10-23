@@ -14,16 +14,20 @@ paid services or API keys: everything runs in the browser.
 1. `/` landing → **Create account** (`/signup`) or **Log in** (`/login`)
 2. `/preferences`: max price, max pickup wait, vehicle size, wheelchair access,
    quiet ride, cabin temperature, eco vehicle, sort priority (onboarding, editable later)
-3. `/ride/new`: pickup and destination, with sample-address quick picks
+3. `/ride/new`: pickup and destination, with sample-address quick picks, and
+   **Ride now** or **Schedule** (pick a day, part of day and 30-minute slot)
 4. `/ride/compare`: ~600 ms skeleton, then 3–4 options in snap-scrolling columns,
    or an attribute-per-row table. Each option has ✓/✗ plus a text label for every
    preference, a match score, Best match / Cheapest / Fastest badges and its own
    **Book this ride** button
 5. `/ride/[id]`: confirmation and simulated trip (Driver assigned → Arriving →
-   On trip → Completed, 3 s each) with **Skip to end**
+   On trip → Completed, 3 s each) with **Skip to end**. A scheduled ride shows
+   its pickup time and a countdown, with **Add to calendar** (.ics), **Cancel ride**
+   and **Start ride now (demo)**
 6. `/ride/[id]/rate`: Yes / Partly / No and an optional note for each preference
    snapshotted at booking, 1–5 stars, then a summary ("Met 4 of 5 preferences")
-7. `/history`: past rides with their rating summary; tap one for details
+7. `/history`: upcoming rides first, then past rides with their rating summary;
+   filter by All / Upcoming / Rated / To rate; tap one for details
 8. `/account`: log out, reset demo data
 
 ## Run locally
@@ -76,6 +80,7 @@ src/lib/rides.ts         deterministic ride engine (seeded by pickup + dropoff),
 src/lib/matching.ts      evaluate, filter, sort by priority, near misses, badges
 src/lib/rating.ts        rating summary ("Met X of Y")
 src/lib/trip.ts          simulated trip stages
+src/lib/schedule.ts      pickup slots, validation, formatting, .ics export
 src/app/(app)/…          protected screens (client-side guard → /login)
 e2e/happy-path.spec.ts   Playwright end-to-end test
 ```
@@ -115,12 +120,20 @@ See `PLAN.md` for the data flow.
   same prices, ETAs, drivers and vehicles. Fares: $2.50 base + $0.95/km + $0.26/min,
   times a tier multiplier, plus a $1.75 booking fee.
 - **Defaults:** max price $50, max wait 10 min, any size, nothing else, sort by cheapest.
-- **Trip progress** is computed from the booking time, so reloading mid-trip
+- **Trip progress** is computed from when the trip started, so reloading mid-trip
   keeps the current stage. "Skip to end" marks the ride completed.
+- **Scheduling:** pickups are 30-minute slots from 5:00 AM to 11:30 PM, at least
+  30 minutes ahead and up to 7 days out (local time). A scheduled ride reserves
+  its driver, so the pickup-wait preference counts as met and "Fastest" ranks by
+  trip time alone; the rating asks whether the pickup was on time instead. When
+  the pickup time arrives the trip starts on its own (timed from the pickup), or
+  you can start it early for the demo. Cancelling is free and the ride stays in
+  History as cancelled. If a saved search's time has passed, Compare falls back to
+  "now" and says so. Prices are the same as riding now.
 - **Re-rating:** opening the rate screen for a rated ride pre-fills the answers,
   and submitting again replaces the rating.
 - **Reset demo data** wipes every RideChoice key in this browser's localStorage.
-- **Design:** Fraunces (soft serif, for headlines) and Plus Jakarta Sans (body,
+- **Design:** Sora (geometric sans, for headlines) and Plus Jakarta Sans (body,
   prices and times, with tabular numbers) via `next/font`. One violet accent with
   neutrals tinted toward it, a soft aurora wash behind page tops, tinted shadows
   instead of hard borders, pill buttons and a floating tab bar. Light and dark mode
