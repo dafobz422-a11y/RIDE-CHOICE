@@ -27,7 +27,7 @@ export default function AccountPage() {
       <PageHeader title="Account" />
       <div className="flex flex-col gap-4 px-4">
         <Card className="flex items-center gap-3">
-          <span className="flex size-12 items-center justify-center rounded-full bg-accent font-display text-xl font-bold text-accent-fg">
+          <span className="btn-primary flex size-14 items-center justify-center rounded-[18px] font-display text-2xl font-semibold text-accent-fg">
             {user!.name.charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0">

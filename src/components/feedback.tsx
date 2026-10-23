@@ -98,10 +98,10 @@ export function Sheet({
       }}
     >
       {open && (
-        <div className="sheet-panel rounded-t-[28px] border border-b-0 border-line bg-surface px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+        <div className="sheet-panel elevated-lg rounded-t-[32px] border border-b-0 border-line bg-surface px-5 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
           <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-line" aria-hidden />
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 id="sheet-title" className="font-display text-xl font-bold">
+            <h2 id="sheet-title" className="font-display text-xl font-semibold">
               {title}
             </h2>
             <button

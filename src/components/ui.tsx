@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
-import { ArrowLeftIcon, CheckIcon, MinusIcon, XIcon } from "./icons";
+import { ArrowLeftIcon, CarIcon, CheckIcon, MinusIcon, XIcon } from "./icons";
 
 export function cx(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(" ");
@@ -11,14 +11,14 @@ export function cx(...parts: (string | false | null | undefined)[]): string {
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 
 const VARIANT: Record<Variant, string> = {
-  primary: "bg-accent text-accent-fg hover:bg-accent-strong shadow-sm",
-  secondary: "bg-surface text-ink border border-line hover:bg-surface-2",
-  ghost: "bg-transparent text-accent hover:bg-accent-soft",
+  primary: "btn-primary text-accent-fg",
+  secondary: "elevated bg-surface text-ink border border-line hover:border-line-strong hover:bg-surface-2",
+  ghost: "bg-transparent text-accent-soft-fg hover:bg-accent-soft",
   danger: "bg-surface text-danger border border-line hover:bg-danger-soft",
 };
 
 const BTN =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 text-base font-semibold transition-[background-color,transform] duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100";
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 text-[0.95rem] font-bold tracking-tight transition-[background-color,border-color,transform] duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100";
 
 export function Button({
   variant = "primary",
@@ -62,19 +62,19 @@ export function PageHeader({
 }) {
   return (
     <header className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-3">
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-3">
         {back && (
           <Link
             href={back}
             aria-label="Back"
-            className="-ml-2 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-surface-2"
+            className="elevated mt-0.5 inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-surface text-ink transition-transform hover:bg-surface-2 active:scale-95"
           >
             <ArrowLeftIcon />
           </Link>
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-[1.65rem] leading-tight font-bold tracking-tight">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
+          <h1 className="font-display text-[2rem] leading-[1.08] font-semibold">{title}</h1>
+          {subtitle && <p className="mt-1.5 text-sm leading-relaxed text-muted">{subtitle}</p>}
         </div>
         {action}
       </div>
@@ -83,7 +83,7 @@ export function PageHeader({
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cx("rounded-3xl border border-line bg-surface p-4", className)}>{children}</div>;
+  return <div className={cx("elevated rounded-[28px] border border-line bg-surface p-4", className)}>{children}</div>;
 }
 
 export function Field({
@@ -104,7 +104,7 @@ export function Field({
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cx(
-          "min-h-12 rounded-2xl border bg-surface px-4 text-base text-ink placeholder:text-muted",
+          "elevated min-h-13 rounded-2xl border bg-surface px-4 text-base text-ink transition-colors placeholder:text-muted focus:border-accent",
           error ? "border-danger" : "border-line",
         )}
         {...input}
@@ -227,8 +227,11 @@ export function EmptyState({
   action: ReactNode;
 }) {
   return (
-    <div className="mx-4 flex flex-col items-center gap-3 rounded-3xl border border-dashed border-line bg-surface px-6 py-10 text-center">
-      <h2 className="font-display text-xl font-bold">{title}</h2>
+    <div className="elevated mx-4 flex flex-col items-center gap-3 rounded-[28px] border border-line bg-surface px-6 py-10 text-center">
+      <span aria-hidden className="btn-primary mb-1 flex size-16 items-center justify-center rounded-[22px] text-accent-fg">
+        <CarIcon size={30} />
+      </span>
+      <h2 className="font-display text-2xl font-semibold">{title}</h2>
       <p className="max-w-[28ch] text-sm text-muted">{body}</p>
       <div className="mt-2 w-full max-w-60">{action}</div>
     </div>

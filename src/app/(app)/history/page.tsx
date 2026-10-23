@@ -54,7 +54,7 @@ export default function HistoryPage() {
           ].map(([label, value], i) => (
             <div key={label} className="animate-rise rounded-2xl border border-line bg-surface px-3 py-2.5" style={{ animationDelay: `${i * 60}ms` }}>
               <dt className="text-xs text-muted">{label}</dt>
-              <dd className="font-display text-2xl font-bold">{value}</dd>
+              <dd className="font-display text-2xl font-semibold">{value}</dd>
             </div>
           ))}
         </dl>
@@ -87,11 +87,11 @@ export default function HistoryPage() {
                 <li key={b.id} data-testid="history-item" className="animate-rise" style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}>
                   <Link
                     href={rating || b.status !== "completed" ? `/ride/${b.id}` : `/ride/${b.id}/rate`}
-                    className="flex items-center gap-3 rounded-3xl border border-line bg-surface p-4 transition-[background-color,transform] duration-150 hover:bg-surface-2 active:scale-[0.98]"
+                    className="flex items-center gap-3 elevated rounded-[28px] border border-line bg-surface p-4 transition-[background-color,transform] duration-150 hover:bg-surface-2 active:scale-[0.98]"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
-                        <p className="font-display text-lg font-bold">{b.option.tier}</p>
+                        <p className="font-display text-lg font-semibold">{b.option.tier}</p>
                         <p className="num font-bold">{formatPrice(b.option.price)}</p>
                       </div>
                       <p className="truncate text-sm text-muted">

@@ -20,7 +20,7 @@ export function FitPreview({ prefs, trip }: { prefs: Preferences; trip: TripDraf
   const fit = selectOptions(options, prefs).eligibleCount;
 
   return (
-    <section aria-labelledby="fit-preview" className="rounded-3xl border border-line bg-surface p-4">
+    <section aria-labelledby="fit-preview" className="elevated rounded-[28px] border border-line bg-surface p-4">
       <div className="flex items-baseline justify-between gap-2">
         <h2 id="fit-preview" className="text-xs font-bold tracking-wider text-muted uppercase">
           Live preview

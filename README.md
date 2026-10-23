@@ -120,9 +120,11 @@ See `PLAN.md` for the data flow.
 - **Re-rating:** opening the rate screen for a rated ride pre-fills the answers,
   and submitting again replaces the rating.
 - **Reset demo data** wipes every RideChoice key in this browser's localStorage.
-- **Design:** Bricolage Grotesque (display) and Manrope (body) via `next/font`,
-  with tabular numbers for prices and times. One teal accent, with neutrals tinted
-  toward it. Light and dark mode follow `prefers-color-scheme`. Every text/background
+- **Design:** Fraunces (soft serif, for headlines) and Plus Jakarta Sans (body,
+  prices and times, with tabular numbers) via `next/font`. One violet accent with
+  neutrals tinted toward it, a soft aurora wash behind page tops, tinted shadows
+  instead of hard borders, pill buttons and a floating tab bar. Light and dark mode
+  follow `prefers-color-scheme`. Every text/background
   pair is at least 4.5:1, touch targets are at least 44 px, focus rings are visible,
   and state is always shown with an icon and text as well as color.
 - **Next.js config:** the scaffold enables Cache Components and partial

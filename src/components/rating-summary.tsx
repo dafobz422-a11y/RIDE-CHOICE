@@ -31,7 +31,7 @@ export function RatingSummaryCard({ booking, rating }: { booking: Booking; ratin
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <h2 data-testid="rating-summary" className="font-display text-xl font-bold">
+        <h2 data-testid="rating-summary" className="font-display text-xl font-semibold">
           {summary.label}
         </h2>
         <Stars value={rating.stars} />

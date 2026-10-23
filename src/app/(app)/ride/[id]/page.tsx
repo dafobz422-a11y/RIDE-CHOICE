@@ -157,7 +157,7 @@ function RideView({ booking: initial, rating }: { booking: Booking; rating: Rati
 
         {done && !rating && (
           <Card className="flex flex-col gap-3 border-accent bg-accent-soft">
-            <p className="font-display text-lg font-bold text-accent-soft-fg">Did this ride deliver?</p>
+            <p className="font-display text-lg font-semibold text-accent-soft-fg">Did this ride deliver?</p>
             <p className="text-sm text-accent-soft-fg">
               Tell us whether each preference you set was met. It takes 30 seconds.
             </p>
@@ -172,13 +172,13 @@ function RideView({ booking: initial, rating }: { booking: Booking; rating: Rati
         <Card className="flex flex-col gap-3">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="font-display text-xl font-bold">{o.tier}</h2>
+              <h2 className="font-display text-xl font-semibold">{o.tier}</h2>
               <p className="text-sm text-muted">
                 {o.vehicle.color} {o.vehicle.make} {o.vehicle.model} · {powertrainLabel(o)}
               </p>
               <p className="num text-sm text-muted">Plate {o.vehicle.plate}</p>
             </div>
-            <p className="num font-display text-2xl font-extrabold">{formatPrice(o.price)}</p>
+            <p className="num text-2xl font-extrabold tracking-tight">{formatPrice(o.price)}</p>
           </div>
           <p className="text-sm">
             Driver <span className="font-semibold">{o.driver.name}</span>{" "}

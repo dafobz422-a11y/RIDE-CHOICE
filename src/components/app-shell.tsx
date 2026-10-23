@@ -19,9 +19,9 @@ export function TabBar() {
   return (
     <nav
       aria-label="Main"
-      className="pb-safe fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[440px] border-t border-line bg-surface/95 backdrop-blur sm:border-x"
+      className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+0.6rem)] z-20 mx-auto max-w-[440px] px-3"
     >
-      <ul className="grid grid-cols-4">
+      <ul className="elevated-lg grid grid-cols-4 rounded-full border border-line bg-surface/85 p-1 backdrop-blur-xl backdrop-saturate-150">
         {TABS.map(({ href, match, label, Icon }) => {
           const active = pathname === match || pathname.startsWith(`${match}/`);
           return (
@@ -30,14 +30,14 @@ export function TabBar() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cx(
-                  "flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-semibold",
-                  active ? "text-accent" : "text-muted hover:text-ink",
+                  "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-full text-[0.7rem] font-bold tracking-tight transition-colors",
+                  active ? "bg-accent-soft text-accent-soft-fg" : "text-muted hover:text-ink",
                 )}
               >
                 <span
                   className={cx(
-                    "flex h-7 w-12 items-center justify-center rounded-full",
-                    active && "bg-accent-soft text-accent-soft-fg",
+                    "flex h-6 items-center justify-center transition-transform duration-200",
+                    active && "-translate-y-px scale-110",
                   )}
                 >
                   <Icon size={20} />
@@ -64,7 +64,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (!ready || !user) return <FullPageSpinner />;
   return (
     <>
-      <main className="flex flex-1 flex-col pb-[calc(5rem+env(safe-area-inset-bottom))]">{children}</main>
+      <main className="flex flex-1 flex-col pb-[calc(6.5rem+env(safe-area-inset-bottom))]">{children}</main>
       <TabBar />
     </>
   );

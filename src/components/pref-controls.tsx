@@ -34,7 +34,7 @@ export function RangeField({
           {label}
         </label>
         {/* Re-keyed on change so the value gives a small pop. */}
-        <span key={value} className="num animate-pop inline-block font-display text-xl font-bold">
+        <span key={value} className="num animate-pop inline-block text-xl font-extrabold tracking-tight">
           {format(value)}
         </span>
       </div>

@@ -105,7 +105,7 @@ export default function PreferencesPage() {
           />
         </Card>
 
-        <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] -mx-4 flex flex-col gap-2 bg-bg/95 px-4 py-3 backdrop-blur">
+        <div className="sticky bottom-[calc(5.7rem+env(safe-area-inset-bottom))] -mx-4 flex flex-col gap-2 bg-linear-to-t from-bg from-60% to-bg/0 px-4 pt-6 pb-3">
           {onboarding || dirty ? (
             <Button block onClick={save} disabled={busy}>
               {onboarding ? "Save and plan a ride" : "Save preferences"}

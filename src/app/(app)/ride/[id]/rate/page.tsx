@@ -212,7 +212,7 @@ function RateForm({ booking, existing }: { booking: Booking; existing: Rating | 
           </fieldset>
         </Card>
 
-        <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] -mx-4 flex flex-col gap-1 bg-bg/95 px-4 py-3 backdrop-blur">
+        <div className="sticky bottom-[calc(5.7rem+env(safe-area-inset-bottom))] -mx-4 flex flex-col gap-1 bg-linear-to-t from-bg from-60% to-bg/0 px-4 pt-6 pb-3">
           {showErrors && !complete && (
             <p role="alert" className="text-center text-sm font-medium text-danger">
               {missing.length > 0 ? `Answer ${missing.length} more preference${missing.length === 1 ? "" : "s"}` : "Add a star rating"}

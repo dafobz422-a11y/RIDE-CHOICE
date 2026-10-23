@@ -119,7 +119,7 @@ export default function ComparePage() {
         <PageHeader title="Comparing rides" subtitle="Checking every ride against your preferences…" back="/ride/new" />
         <div role="status" aria-label="Loading ride options" className="flex gap-3 overflow-hidden px-4">
           {[0, 1].map((i) => (
-            <div key={i} className="flex w-[80%] shrink-0 flex-col gap-3 rounded-3xl border border-line bg-surface p-4">
+            <div key={i} className="flex w-[80%] shrink-0 flex-col gap-3 elevated rounded-[28px] border border-line bg-surface p-4">
               <Skeleton className="h-6 w-24" />
               <div className="flex justify-between">
                 <Skeleton className="h-7 w-28" />
@@ -344,12 +344,12 @@ export default function ComparePage() {
           <div className="flex flex-col gap-4">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <p className="font-display text-2xl font-bold">{pending.tier}</p>
+                <p className="font-display text-2xl font-semibold">{pending.tier}</p>
                 <p className="text-sm text-muted">
                   {pending.vehicle.color} {pending.vehicle.make} {pending.vehicle.model} · {pending.driver.name}
                 </p>
               </div>
-              <p className="num font-display text-3xl font-extrabold">{formatPrice(pending.price)}</p>
+              <p className="num text-3xl font-extrabold tracking-tight">{formatPrice(pending.price)}</p>
             </div>
             <ul className="flex flex-col gap-2 rounded-2xl bg-surface-2 p-3 text-sm">
               <li className="flex items-center gap-2">

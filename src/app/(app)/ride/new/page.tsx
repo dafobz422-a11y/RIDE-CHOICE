@@ -60,7 +60,7 @@ export default function NewRidePage() {
     <>
       <PageHeader title={`Where to, ${user!.name.split(" ")[0]}?`} subtitle="We'll compare rides against your preferences." />
       <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4 px-4">
-        <div className="flex flex-col gap-1 rounded-3xl border border-line bg-surface p-4">
+        <div className="flex flex-col gap-1 elevated rounded-[28px] border border-line bg-surface p-4">
           <div onFocus={() => setTarget("pickup")}>
             <Field
               label="Pickup"
@@ -137,7 +137,7 @@ export default function NewRidePage() {
           </ul>
         </section>
 
-        <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] -mx-4 bg-bg/95 px-4 py-3 backdrop-blur">
+        <div className="sticky bottom-[calc(5.7rem+env(safe-area-inset-bottom))] -mx-4 bg-linear-to-t from-bg from-60% to-bg/0 px-4 pt-6 pb-3">
           <Button type="submit" block disabled={busy}>
             Find rides
           </Button>

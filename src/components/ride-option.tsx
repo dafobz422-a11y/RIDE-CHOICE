@@ -42,7 +42,7 @@ export function PrefCheck({ prefKey, option, prefs }: { prefKey: PrefKey; option
 }
 
 const BADGE_STYLE: Record<Badge, string> = {
-  "Best match": "bg-accent text-accent-fg",
+  "Best match": "btn-primary text-accent-fg",
   Cheapest: "bg-accent-soft text-accent-soft-fg",
   Fastest: "bg-warn-soft text-warn",
 };
@@ -65,7 +65,7 @@ export function ScoreMeter({ score, total }: { score: number; total: number }) {
     <div className="flex items-center gap-2">
       <div className="flex flex-1 gap-1" aria-hidden>
         {Array.from({ length: total }, (_, i) => (
-          <span key={i} className={cx("h-1.5 flex-1 rounded-full", i < score ? "bg-accent" : "bg-surface-2")} />
+          <span key={i} className={cx("h-2 flex-1 rounded-full", i < score ? "btn-primary" : "bg-surface-2")} />
         ))}
       </div>
       <span className="num text-sm font-bold whitespace-nowrap">
@@ -102,8 +102,12 @@ export function OptionCard({
       data-testid="ride-option"
       aria-label={`${o.tier}, option ${position} of ${count}`}
       className={cx(
-        "flex w-full flex-col rounded-3xl border bg-surface p-4",
-        eligible ? "border-line" : "border-dashed border-danger/60",
+        "flex w-full flex-col elevated rounded-[28px] border bg-surface p-4",
+        !eligible
+          ? "border-dashed border-danger/60"
+          : badges.includes("Best match")
+            ? "elevated-lg border-accent/50 ring-2 ring-accent/25"
+            : "border-line",
       )}
     >
       <div className="flex min-h-7 items-start justify-between gap-2">
@@ -114,22 +118,22 @@ export function OptionCard({
       </div>
       <div className="mt-2 flex items-end justify-between gap-2">
         <div>
-          <h3 className="font-display text-xl font-bold">{o.tier}</h3>
+          <h3 className="font-display text-2xl font-semibold">{o.tier}</h3>
           <p className="text-sm text-muted">
             {o.vehicle.color} {o.vehicle.make} {o.vehicle.model}
           </p>
         </div>
-        <p className="num font-display text-2xl font-extrabold">{formatPrice(o.price)}</p>
+        <p className="num text-2xl font-extrabold tracking-tight">{formatPrice(o.price)}</p>
       </div>
 
       <dl className="num mt-3 grid grid-cols-2 gap-2 text-sm">
-        <div className="rounded-2xl bg-surface-2 px-3 py-2">
+        <div className="rounded-2xl bg-surface-2/80 px-3 py-2.5">
           <dt className="text-xs text-muted">Pickup in</dt>
           <dd className="flex items-center gap-1 font-bold">
             <ClockIcon size={14} /> {o.etaMin} min
           </dd>
         </div>
-        <div className="rounded-2xl bg-surface-2 px-3 py-2">
+        <div className="rounded-2xl bg-surface-2/80 px-3 py-2.5">
           <dt className="text-xs text-muted">Trip</dt>
           <dd className="font-bold">{o.durationMin} min</dd>
         </div>
@@ -187,7 +191,7 @@ export function CompareTable({
   const head = "sticky left-0 z-10 bg-surface px-3 py-2.5 text-left text-xs font-semibold text-muted";
   const cell = "px-3 py-2.5 align-top";
   return (
-    <div className="overflow-x-auto rounded-3xl border border-line bg-surface">
+    <div className="overflow-x-auto elevated rounded-[28px] border border-line bg-surface">
       <table className="num w-full min-w-[480px] border-collapse text-sm">
         <caption className="sr-only">Ride options compared attribute by attribute</caption>
         <thead>
@@ -197,9 +201,9 @@ export function CompareTable({
             </th>
             {shown.map(({ option: o, eligible, badges }) => (
               <th key={o.id} scope="col" className={cx(cell, "text-left")}>
-                <span className="block font-display text-base font-bold">{o.tier}</span>
+                <span className="block font-display text-lg font-semibold">{o.tier}</span>
                 {!eligible && <span className="block text-xs font-bold text-danger">Near miss</span>}
-                {badges.length > 0 && <span className="block text-xs font-semibold text-accent">{badges.join(" · ")}</span>}
+                {badges.length > 0 && <span className="block text-xs font-bold text-accent-soft-fg">{badges.join(" · ")}</span>}
               </th>
             ))}
           </tr>

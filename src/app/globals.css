@@ -1,49 +1,59 @@
 @import "tailwindcss";
 
-/* Neutrals are tinted toward the teal accent. Contrast-checked pairs:
-   text/bg, muted/surface and accent-fg/accent are all ≥ 4.5:1. */
+/* Violet accent; neutrals tinted toward it. Every text/background pair used
+   is checked at ≥ 4.5:1 (light ≥ 5.4, dark ≥ 6.7). */
 :root {
-  --bg: #eef4f2;
+  --bg: #f5f3fb;
   --surface: #ffffff;
-  --surface-2: #e3edea;
-  --border: #c9d8d4;
-  --text: #0c1f1b;
-  --muted: #475d58;
-  --accent: #0a6b60;
-  --accent-strong: #08554c;
+  --surface-2: #ece8f7;
+  --border: #e0dbf0;
+  --border-strong: #cbc4e4;
+  --text: #16122b;
+  --muted: #5a5574;
+  --accent: #5536e0;
+  --accent-strong: #4325c4;
   --accent-fg: #ffffff;
-  --accent-soft: #d3ece7;
-  --accent-soft-fg: #074a42;
-  --success: #17663a;
-  --success-soft: #dcf1e3;
-  --danger: #b3261e;
-  --danger-soft: #fbe3e1;
-  --warn: #7a4f00;
-  --warn-soft: #fbefd5;
-  --ring: #0a6b60;
+  --accent-soft: #e7e1fd;
+  --accent-soft-fg: #3a1fb0;
+  --glow-1: #8b6cff;
+  --glow-2: #ff9ad5;
+  --glow-3: #6fd3ff;
+  --success: #13683b;
+  --success-soft: #dcf2e4;
+  --danger: #b4232c;
+  --danger-soft: #fde4e5;
+  --warn: #7d4a00;
+  --warn-soft: #fdeccc;
+  --ring: #5536e0;
+  --shadow-color: 250 40% 30%;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #08120f;
-    --surface: #101e1b;
-    --surface-2: #172925;
-    --border: #2a403b;
-    --text: #e4f1ee;
-    --muted: #9fb6b0;
-    --accent: #3dd1bd;
-    --accent-strong: #6fe0cf;
-    --accent-fg: #03201b;
-    --accent-soft: #123630;
-    --accent-soft-fg: #9cebdf;
-    --success: #74d79a;
-    --success-soft: #11301f;
-    --danger: #ff8f86;
-    --danger-soft: #3a1714;
-    --warn: #f3c46c;
-    --warn-soft: #33270e;
-    --ring: #6fe0cf;
+    --bg: #0c0a16;
+    --surface: #151227;
+    --surface-2: #1e1a36;
+    --border: #2a2547;
+    --border-strong: #3b3462;
+    --text: #ece9fb;
+    --muted: #a6a0c4;
+    --accent: #a493ff;
+    --accent-strong: #c0b4ff;
+    --accent-fg: #140b3d;
+    --accent-soft: #2a2259;
+    --accent-soft-fg: #d2c9ff;
+    --glow-1: #6a4cff;
+    --glow-2: #c2408f;
+    --glow-3: #1f7fb0;
+    --success: #72d99c;
+    --success-soft: #10301e;
+    --danger: #ff8e93;
+    --danger-soft: #3b1519;
+    --warn: #f4c26a;
+    --warn-soft: #33260c;
+    --ring: #c0b4ff;
+    --shadow-color: 250 60% 2%;
     color-scheme: dark;
   }
 }
@@ -53,6 +63,7 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
   --color-ink: var(--text);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
@@ -80,6 +91,50 @@ body {
   color: var(--text);
   font-family: var(--font-body), system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Fraunces: soft, slightly wonky optical size for headlines. */
+.font-display {
+  font-variation-settings: "SOFT" 100, "WONK" 0;
+  letter-spacing: -0.02em;
+}
+
+/* Soft, colour-tinted elevation instead of hard borders. */
+.elevated {
+  box-shadow:
+    0 1px 1px hsl(var(--shadow-color) / 0.04),
+    0 2px 4px hsl(var(--shadow-color) / 0.04),
+    0 10px 24px -8px hsl(var(--shadow-color) / 0.12);
+}
+.elevated-lg {
+  box-shadow:
+    0 2px 4px hsl(var(--shadow-color) / 0.05),
+    0 18px 40px -12px hsl(var(--shadow-color) / 0.22);
+}
+
+/* Aurora wash behind page tops. */
+.aurora {
+  background:
+    radial-gradient(60% 50% at 10% 0%, color-mix(in oklab, var(--glow-1) 26%, transparent), transparent 70%),
+    radial-gradient(50% 45% at 95% 5%, color-mix(in oklab, var(--glow-2) 20%, transparent), transparent 70%),
+    radial-gradient(60% 40% at 60% 30%, color-mix(in oklab, var(--glow-3) 12%, transparent), transparent 70%);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 88%, white) 0%, var(--accent) 55%, var(--accent-strong) 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    0 8px 20px -8px color-mix(in oklab, var(--accent) 70%, transparent);
+}
+.btn-primary:hover {
+  background: var(--accent-strong);
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, var(--accent) 0%, color-mix(in oklab, var(--accent) 55%, var(--glow-2)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 :focus-visible {
