@@ -1,36 +1,158 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RideChoice
 
-## Getting Started
+A mobile-first web app where a rider sets ride preferences, compares the 3–4 rides
+that fit **side by side** (every preference checked ✓/✗), books one, watches a
+simulated trip, and then rates whether the ride actually met each preference.
 
-First, run the development server:
+Built with Next.js 16 (App Router), TypeScript (strict) and Tailwind CSS 4. No
+paid services or API keys: everything runs in the browser.
+
+## The path
+
+1. `/` landing → **Create account** (`/signup`) or **Log in** (`/login`)
+2. `/preferences`: max price, max pickup wait, vehicle size, wheelchair access,
+   quiet ride, cabin temperature, eco vehicle, sort priority (onboarding, editable later)
+3. `/ride/new`: pickup and destination, with sample-address quick picks
+4. `/ride/compare`: ~600 ms skeleton, then 3–4 options in snap-scrolling columns,
+   or an attribute-per-row table. Each option has ✓/✗ plus a text label for every
+   preference, a match score, Best match / Cheapest / Fastest badges and its own
+   **Book this ride** button
+5. `/ride/[id]`: confirmation and simulated trip (Driver assigned → Arriving →
+   On trip → Completed, 3 s each) with **Skip to end**
+6. `/ride/[id]/rate`: Yes / Partly / No and an optional note for each preference
+   snapshotted at booking, 1–5 stars, then a summary ("Met 4 of 5 preferences")
+7. `/history`: past rides with their rating summary; tap one for details
+8. `/account`: log out, reset demo data
+
+## Run locally
+
+Requires Node 20.9+ (developed on Node 24).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Production build: `npm run build && npm start`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Test
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npx tsc --noEmit
+npm test                      # Vitest unit tests for src/lib (matching, scoring, rides, rating, store, auth)
+npx playwright install chromium   # first time only
+npx playwright test           # e2e happy path at an iPhone 13 viewport
+```
 
-## Learn More
+The Playwright config builds the app and serves it on port 3100. To run the e2e
+suite against a deployment instead, run `E2E_BASE_URL=https://your-url npx playwright test`.
 
-To learn more about Next.js, take a look at the following resources:
+The e2e test (`e2e/happy-path.spec.ts`) signs up, sets preferences, plans a ride,
+asserts 3–4 options are visible, books, skips to the end, rates every preference,
+and checks that History shows the right "Met X of Y". It also reloads mid-flow
+to check that state persists, logs out and back in, and fails if the browser
+console logs any error.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy (Vercel)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npx vercel login
+npx vercel --prod --yes
+```
 
-## Deploy on Vercel
+No environment variables are needed. Any static-capable Node host works too
+(`npm run build && npm start`).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project layout
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/lib/types.ts         data model (User, Preferences, RideOption, Booking, Rating)
+src/lib/store.ts         Store interface + LocalStore (localStorage → in-memory fallback)
+src/lib/auth.ts          sign up / log in / log out, SHA-256 password hashing (Web Crypto)
+src/lib/rides.ts         deterministic ride engine (seeded by pickup + dropoff), 6 tiers
+src/lib/matching.ts      evaluate, filter, sort by priority, near misses, badges
+src/lib/rating.ts        rating summary ("Met X of Y")
+src/lib/trip.ts          simulated trip stages
+src/app/(app)/…          protected screens (client-side guard → /login)
+e2e/happy-path.spec.ts   Playwright end-to-end test
+```
+
+See `PLAN.md` for the data flow.
+
+## Assumptions and defaults
+
+- **Mock auth, real hashing.** Passwords are salted (per user, random 16 bytes)
+  and hashed with SHA-256 via Web Crypto. Accounts and the session live in this
+  browser's localStorage. This is a demo, not production security: a real
+  backend should use a slow KDF (Argon2/bcrypt) on the server.
+- **Protected routes are guarded client-side.** All data lives in the browser,
+  so there is nothing for the server to protect. Signed-out visitors to any app
+  screen are sent to `/login`.
+- **Hard and soft preferences.** Max price, max pickup wait, vehicle size (when
+  not "Any") and wheelchair access (when on) are hard filters. Quiet ride (when
+  on), temperature (when not "Neutral") and eco (when on) only affect the match
+  score. Priority sorts and is not scored.
+- **Which preferences count.** Price and wait always count. The others count only
+  when the rider asks for them, so a rider who wants nothing special sees "2/2".
+  The rating screen asks about exactly these, as snapshotted at booking.
+- **Match score** = active preferences met / active preferences.
+- **Near misses.** If fewer than 3 rides pass the hard filters, the closest misses
+  (fewest failed must-haves, then smallest overshoot) fill up to 3. They are
+  labeled "Near miss — Doesn't meet: price" and can still be booked.
+- **At most 4 options** are shown, sorted by priority: Cheapest = price,
+  Fastest = pickup wait + trip time, Comfort = tier comfort, then match score.
+- **Badges** go only to eligible options: Best match = highest score; Cheapest;
+  Fastest = earliest arrival. Ties go to the higher-sorted option.
+- **Vehicle size:** "Standard" means a standard car (XL doesn't count); "XL"
+  means 6-seat vehicles. The Access tier is a ramp-equipped van (XL size).
+- **Eco** = EV or hybrid. **Temperature** is met when the vehicle has climate
+  control the driver sets to your preference.
+- **Ride engine.** One option per tier (Economy, Comfort, XL, Green EV, Access,
+  Premium). The same pickup and dropoff (ignoring case and spacing) always gives the
+  same prices, ETAs, drivers and vehicles. Fares: $2.50 base + $0.95/km + $0.26/min,
+  times a tier multiplier, plus a $1.75 booking fee.
+- **Defaults:** max price $50, max wait 10 min, any size, nothing else, sort by cheapest.
+- **Trip progress** is computed from the booking time, so reloading mid-trip
+  keeps the current stage. "Skip to end" marks the ride completed.
+- **Re-rating:** opening the rate screen for a rated ride pre-fills the answers,
+  and submitting again replaces the rating.
+- **Reset demo data** wipes every RideChoice key in this browser's localStorage.
+- **Design:** Bricolage Grotesque (display) and Manrope (body) via `next/font`,
+  with tabular numbers for prices and times. One teal accent, with neutrals tinted
+  toward it. Light and dark mode follow `prefers-color-scheme`. Every text/background
+  pair is at least 4.5:1, touch targets are at least 44 px, focus rings are visible,
+  and state is always shown with an icon and text as well as color.
+- **Next.js config:** the scaffold enables Cache Components and partial
+  prefetching. They are turned off because this app is fully client-rendered.
+- **E2E browser:** the iPhone 13 profile (viewport, DPR, touch, mobile UA) runs
+  in Chromium so the suite works the same on Windows, macOS and Linux CI.
+
+## Swapping localStorage for a real database
+
+All persistence goes through the async `Store` interface in `src/lib/store.ts`.
+The UI only imports the `store` instance, so changing backends means one new
+class and a one-line swap:
+
+```ts
+// src/lib/store.ts
+export const store: Store = new LocalStore();      // today
+export const store: Store = new SupabaseStore(sb); // later
+```
+
+**Supabase.** Create tables `users` (or use Supabase Auth), `preferences
+(user_id pk, data jsonb)`, `drafts (user_id pk, data jsonb)`, `bookings (id pk,
+user_id, data jsonb, status, created_at)` and `ratings (booking_id pk, data jsonb)`,
+with row-level security on `user_id = auth.uid()`. Then implement each `Store`
+method with the Supabase client, for example
+`getBooking: (id) => sb.from("bookings").select("data").eq("id", id).maybeSingle()`.
+Replace `src/lib/auth.ts` with Supabase Auth (`signUp`, `signInWithPassword`,
+`signOut`) and have `getSession` read `sb.auth.getSession()`.
+
+**Prisma.** Model the same tables in `schema.prisma`. Expose them through route
+handlers (`src/app/api/*/route.ts`) or Server Functions, and write an
+`ApiStore implements Store` that calls them with `fetch`. Move password hashing to the
+server with bcrypt or Argon2, keep the session in an httpOnly cookie, and enforce
+protected routes in `proxy.ts` as well.
+
+`createMemoryStore()` stays useful for unit tests either way.
