@@ -285,5 +285,10 @@ export function newId(): string {
   } catch {
     /* insecure context */
   }
-  return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  // Still a v4 UUID, so ids fit the database's uuid columns.
+  const hex = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16));
+  hex[12] = "4";
+  hex[16] = ((parseInt(hex[16], 16) & 0x3) | 0x8).toString(16);
+  const h = hex.join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }

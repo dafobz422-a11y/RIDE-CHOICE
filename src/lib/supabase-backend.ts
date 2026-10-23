@@ -29,6 +29,9 @@ function softRead<T>(result: { data: T | null; error: { message: string } | null
   return result.data ?? fallback;
 }
 
+/** Booking ids are UUIDs; anything else can't exist, so skip the round trip (and the 400). */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export class SupabaseStore implements DataStore {
   constructor(private sb: SupabaseClient) {}
 
@@ -65,6 +68,7 @@ export class SupabaseStore implements DataStore {
   }
 
   async getBooking(id: string) {
+    if (!UUID_RE.test(id)) return null;
     const r = await this.sb.from("bookings").select("data").eq("id", id).maybeSingle();
     return (softRead(r, "load the ride", null)?.data as Booking | undefined) ?? null;
   }
@@ -100,6 +104,7 @@ export class SupabaseStore implements DataStore {
   }
 
   async getRating(bookingId: string) {
+    if (!UUID_RE.test(bookingId)) return null;
     const r = await this.sb.from("ratings").select("data").eq("booking_id", bookingId).maybeSingle();
     return (softRead(r, "load the rating", null)?.data as Rating | undefined) ?? null;
   }
