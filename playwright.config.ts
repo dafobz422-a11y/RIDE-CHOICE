@@ -27,6 +27,9 @@ export default defineConfig({
         command: `npm run build && npx next start -p ${PORT}`,
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
+        // Build the browser-only demo even if .env.local holds Supabase keys,
+        // so test runs never create riders in the real database.
+        env: { NEXT_PUBLIC_SUPABASE_URL: "", NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "" },
         timeout: 240_000,
       },
 });

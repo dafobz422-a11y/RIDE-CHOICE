@@ -7,7 +7,7 @@ import { useAsync } from "@/lib/hooks";
 import { formatPrice } from "@/lib/prefs";
 import { historyStats, summarizeRating } from "@/lib/rating";
 import { formatSchedule, timeUntil } from "@/lib/schedule";
-import { store } from "@/lib/store";
+import { store } from "@/lib/backend";
 import { STAGE_LABEL } from "@/lib/trip";
 import type { Booking, Rating } from "@/lib/types";
 import { CalendarIcon, ChevronRightIcon } from "@/components/icons";

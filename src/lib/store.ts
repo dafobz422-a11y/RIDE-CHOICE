@@ -8,20 +8,11 @@ import type {
 } from "./types";
 
 /**
- * Persistence boundary. Every method is async so this can be swapped for a
- * network-backed implementation (Supabase, Prisma behind route handlers, ...)
- * without touching the UI.
+ * Persistence boundary for ride data. Every method is async so it can be
+ * backed by the browser (LocalStore) or a network database (SupabaseStore in
+ * src/lib/supabase-backend.ts) without touching the UI. Pick one in backend.ts.
  */
-export interface Store {
-  findUserByEmail(email: string): Promise<User | null>;
-  getUser(id: string): Promise<User | null>;
-  createUser(user: User): Promise<void>;
-  updateUser(id: string, patch: Partial<User>): Promise<User | null>;
-
-  getSession(): Promise<Session | null>;
-  setSession(session: Session): Promise<void>;
-  clearSession(): Promise<void>;
-
+export interface DataStore {
   getPreferences(userId: string): Promise<Preferences | null>;
   savePreferences(userId: string, prefs: Preferences): Promise<void>;
 
@@ -36,8 +27,20 @@ export interface Store {
   saveRating(rating: Rating): Promise<void>;
   getRating(bookingId: string): Promise<Rating | null>;
 
-  /** Wipe all demo data, including the session. */
+  /** Delete this rider's ride data (locally: every RideChoice key, including the session). */
   reset(): Promise<void>;
+}
+
+/** The browser-only demo also keeps accounts and the session itself. */
+export interface Store extends DataStore {
+  findUserByEmail(email: string): Promise<User | null>;
+  getUser(id: string): Promise<User | null>;
+  createUser(user: User): Promise<void>;
+  updateUser(id: string, patch: Partial<User>): Promise<User | null>;
+
+  getSession(): Promise<Session | null>;
+  setSession(session: Session): Promise<void>;
+  clearSession(): Promise<void>;
 }
 
 /** Minimal key-value backend so storage can fail over cleanly. */
@@ -271,8 +274,8 @@ export function createMemoryStore(): Store {
   return new LocalStore(new MemoryKV());
 }
 
-/** App-wide store instance. Swap this line to change backends. */
-export const store: Store = new LocalStore();
+/** The browser-only store; backend.ts decides whether the app uses it. */
+export const localStore: Store = new LocalStore();
 
 export function newId(): string {
   try {

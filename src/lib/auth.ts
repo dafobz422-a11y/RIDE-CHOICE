@@ -101,3 +101,39 @@ export async function currentUser(store: Store): Promise<PublicUser | null> {
   const user = await store.getUser(session.userId);
   return user ? toPublic(user) : null;
 }
+
+/**
+ * What the UI needs from authentication. Implemented locally (browser-only
+ * demo, below) and by Supabase Auth (src/lib/supabase-backend.ts).
+ */
+export interface AuthApi {
+  kind: "local" | "supabase";
+  signup(input: SignupInput): Promise<PublicUser>;
+  login(email: string, password: string): Promise<PublicUser>;
+  logout(): Promise<void>;
+  currentUser(): Promise<PublicUser | null>;
+  completeOnboarding(userId: string): Promise<void>;
+  /** Emails a reset link that lands on `redirectTo`. */
+  requestPasswordReset(email: string, redirectTo: string): Promise<void>;
+  /** Sets a new password for the signed-in (or recovering) user. */
+  updatePassword(password: string): Promise<void>;
+}
+
+export function localAuth(store: Store): AuthApi {
+  return {
+    kind: "local",
+    signup: (input) => signup(store, input),
+    login: (email, password) => login(store, email, password),
+    logout: () => logout(store),
+    currentUser: () => currentUser(store),
+    async completeOnboarding(userId) {
+      await store.updateUser(userId, { onboarded: true });
+    },
+    async requestPasswordReset() {
+      throw new AuthError("Password reset needs the online version of RideChoice. In this demo, create a new account instead.", "email");
+    },
+    async updatePassword() {
+      throw new AuthError("Password reset needs the online version of RideChoice.", "password");
+    },
+  };
+}

@@ -7,7 +7,7 @@ import { powertrainLabel } from "@/lib/describe";
 import { useAsync } from "@/lib/hooks";
 import { formatPrice } from "@/lib/prefs";
 import { ASSIGN_BEFORE_MIN, buildIcs, calendarTile, formatSchedule, formatTime, timeUntil } from "@/lib/schedule";
-import { store } from "@/lib/store";
+import { store } from "@/lib/backend";
 import { STAGES, STAGE_LABEL, tripProgress, tripStart } from "@/lib/trip";
 import type { Booking, BookingStatus, Rating } from "@/lib/types";
 import { CalendarIcon, CheckIcon, DownloadIcon, FlagIcon, PinIcon, PlayIcon, StarIcon, XIcon } from "@/components/icons";

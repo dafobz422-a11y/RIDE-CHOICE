@@ -1,15 +1,15 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import * as auth from "./auth";
-import { store } from "./store";
+import type { SignupInput } from "./auth";
+import { authApi } from "./backend";
 import type { PublicUser } from "./types";
 
 interface AuthValue {
   user: PublicUser | null;
   /** False until the session has been read from storage. */
   ready: boolean;
-  signup(input: auth.SignupInput): Promise<PublicUser>;
+  signup(input: SignupInput): Promise<PublicUser>;
   login(email: string, password: string): Promise<PublicUser>;
   logout(): Promise<void>;
   refresh(): Promise<void>;
@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      setUser(await auth.currentUser(store));
+      setUser(await authApi.currentUser());
     } catch {
       setUser(null);
     } finally {
@@ -43,17 +43,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ready,
       refresh,
       async signup(input) {
-        const u = await auth.signup(store, input);
+        const u = await authApi.signup(input);
         setUser(u);
         return u;
       },
       async login(email, password) {
-        const u = await auth.login(store, email, password);
+        const u = await authApi.login(email, password);
         setUser(u);
         return u;
       },
       async logout() {
-        await auth.logout(store);
+        await authApi.logout();
         setUser(null);
       },
     }),

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useAsync } from "@/lib/hooks";
 import { DEFAULT_PREFERENCES, PRIORITY_LABEL, TEMP_LABEL } from "@/lib/prefs";
-import { store } from "@/lib/store";
+import { authApi, store } from "@/lib/backend";
 import type { Preferences, Priority, Temperature } from "@/lib/types";
 import { haptic, useToast } from "@/components/feedback";
 import { FitPreview, SAMPLE_TRIP } from "@/components/fit-preview";
@@ -43,7 +43,7 @@ export default function PreferencesPage() {
     await store.savePreferences(userId, prefs!);
     haptic();
     if (onboarding) {
-      await store.updateUser(userId, { onboarded: true });
+      await authApi.completeOnboarding(userId);
       await refresh();
       toast("Preferences saved");
       router.push("/ride/new");

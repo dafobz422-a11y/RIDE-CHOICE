@@ -7,7 +7,7 @@ import { useAsync } from "@/lib/hooks";
 import { askedFor } from "@/lib/describe";
 import { PREF_SHORT } from "@/lib/prefs";
 import { ANSWER_LABEL, isRatingComplete, summarizeRating } from "@/lib/rating";
-import { store } from "@/lib/store";
+import { store } from "@/lib/backend";
 import type { Booking, PrefAnswer, PrefKey, Rating } from "@/lib/types";
 import { StarIcon } from "@/components/icons";
 import { haptic, useToast } from "@/components/feedback";

@@ -7,7 +7,7 @@ import { useAsync } from "@/lib/hooks";
 import { takeIntent } from "@/lib/intent";
 import { SAMPLE_ADDRESSES } from "@/lib/rides";
 import { formatSchedule, isValidSchedule } from "@/lib/schedule";
-import { store } from "@/lib/store";
+import { store } from "@/lib/backend";
 import { haptic } from "@/components/feedback";
 import { CalendarIcon, ClockIcon, FlagIcon, PinIcon, SwapIcon, XIcon } from "@/components/icons";
 import { SchedulePicker } from "@/components/schedule-picker";

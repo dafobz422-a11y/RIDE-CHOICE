@@ -9,7 +9,7 @@ import { setIntent } from "@/lib/intent";
 import { DEFAULT_PREFERENCES, PRIORITY_LABEL, formatPrice } from "@/lib/prefs";
 import { generateOptions } from "@/lib/rides";
 import { formatSchedule, timeUntil } from "@/lib/schedule";
-import { store } from "@/lib/store";
+import { store } from "@/lib/backend";
 import { STAGES, STAGE_LABEL, tripProgress, tripStart } from "@/lib/trip";
 import type { Booking, Tier } from "@/lib/types";
 import { SAMPLE_TRIP } from "@/components/fit-preview";

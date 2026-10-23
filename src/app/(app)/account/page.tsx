@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { logout } from "@/lib/auth";
 import { useAuth } from "@/lib/auth-context";
 import { useAsync } from "@/lib/hooks";
 import { setIntent } from "@/lib/intent";
 import { DEFAULT_PREFERENCES, PREF_SHORT, PRIORITY_LABEL, activeKeys, describePref } from "@/lib/prefs";
-import { store } from "@/lib/store";
+import { authApi, backendKind, store } from "@/lib/backend";
 import { CalendarIcon, ChevronRightIcon, HistoryIcon, SlidersIcon } from "@/components/icons";
 import { Button, Card, PageHeader } from "@/components/ui";
 
@@ -15,6 +14,7 @@ export default function AccountPage() {
   const { user } = useAuth();
   const userId = user!.id;
   const [confirmReset, setConfirmReset] = useState(false);
+  const online = backendKind === "supabase";
   const [data] = useAsync(async () => {
     const [prefs, bookings] = await Promise.all([store.getPreferences(userId), store.listBookings(userId)]);
     return { prefs: prefs ?? DEFAULT_PREFERENCES, bookings };
@@ -23,12 +23,13 @@ export default function AccountPage() {
   // Full navigation (not a client transition) so the protected-route guard
   // doesn't race us to /login, and all in-memory state starts fresh.
   async function onLogout() {
-    await logout(store);
+    await authApi.logout();
     window.location.replace("/");
   }
 
   async function onReset() {
     await store.reset();
+    await authApi.logout();
     window.location.replace("/");
   }
 
@@ -111,26 +112,32 @@ export default function AccountPage() {
         </Button>
 
         <Card className="flex flex-col gap-3">
-          <h2 className="font-semibold">Reset demo data</h2>
-          <p className="text-sm text-muted">Deletes every account, preference, ride and rating stored in this browser, and logs you out.</p>
+          <h2 className="font-semibold">{online ? "Delete my ride data" : "Reset demo data"}</h2>
+          <p className="text-sm text-muted">
+            {online
+              ? "Deletes your preferences, rides and ratings, and logs you out. Your login stays, so you can start fresh."
+              : "Deletes every account, preference, ride and rating stored in this browser, and logs you out."}
+          </p>
           {confirmReset ? (
             <div className="grid grid-cols-2 gap-2">
               <Button variant="secondary" onClick={() => setConfirmReset(false)}>
                 Cancel
               </Button>
               <Button variant="danger" onClick={onReset}>
-                Yes, reset
+                {online ? "Yes, delete" : "Yes, reset"}
               </Button>
             </div>
           ) : (
             <Button variant="danger" block onClick={() => setConfirmReset(true)}>
-              Reset demo data
+              {online ? "Delete my ride data" : "Reset demo data"}
             </Button>
           )}
         </Card>
 
         <p className="text-center text-xs text-muted">
-          RideChoice is a demo. Rides, drivers and prices are simulated; data never leaves this browser.
+          {online
+            ? "Rides, drivers and prices are simulated. Your account and rides are saved securely online."
+            : "RideChoice is a demo. Rides, drivers and prices are simulated; data never leaves this browser."}
         </p>
       </div>
     </>

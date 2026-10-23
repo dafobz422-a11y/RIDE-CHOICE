@@ -116,6 +116,14 @@ export function AuthForm({ mode }: { mode: Mode }) {
           error={shown.password}
           hint={isSignup ? "At least 8 characters, with a letter and a number." : undefined}
         />
+        {!isSignup && (
+          <Link
+            href="/forgot-password"
+            className="-mt-2 inline-flex min-h-11 items-center self-end text-sm font-semibold text-accent-soft-fg underline underline-offset-4"
+          >
+            Forgot password?
+          </Link>
+        )}
         {errors.form && (
           <p role="alert" className="rounded-2xl bg-danger-soft p-3 text-sm font-medium text-danger">
             {errors.form}
