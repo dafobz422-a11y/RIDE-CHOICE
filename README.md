@@ -71,6 +71,10 @@ console logs any error.
 
 ## Deploy (Vercel)
 
+Source: https://github.com/dafobz422-a11y/RIDE-CHOICE. With the repository
+connected to the Vercel project, every push to `main` deploys to production and
+other branches get preview URLs. To deploy by hand instead:
+
 ```bash
 npx vercel login
 npx vercel --prod --yes
