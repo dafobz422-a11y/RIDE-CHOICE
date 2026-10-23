@@ -1,26 +1,123 @@
 @import "tailwindcss";
 
+/* Neutrals are tinted toward the teal accent. Contrast-checked pairs:
+   text/bg, muted/surface and accent-fg/accent are all ≥ 4.5:1. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #eef4f2;
+  --surface: #ffffff;
+  --surface-2: #e3edea;
+  --border: #c9d8d4;
+  --text: #0c1f1b;
+  --muted: #475d58;
+  --accent: #0a6b60;
+  --accent-strong: #08554c;
+  --accent-fg: #ffffff;
+  --accent-soft: #d3ece7;
+  --accent-soft-fg: #074a42;
+  --success: #17663a;
+  --success-soft: #dcf1e3;
+  --danger: #b3261e;
+  --danger-soft: #fbe3e1;
+  --warn: #7a4f00;
+  --warn-soft: #fbefd5;
+  --ring: #0a6b60;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #08120f;
+    --surface: #101e1b;
+    --surface-2: #172925;
+    --border: #2a403b;
+    --text: #e4f1ee;
+    --muted: #9fb6b0;
+    --accent: #3dd1bd;
+    --accent-strong: #6fe0cf;
+    --accent-fg: #03201b;
+    --accent-soft: #123630;
+    --accent-soft-fg: #9cebdf;
+    --success: #74d79a;
+    --success-soft: #11301f;
+    --danger: #ff8f86;
+    --danger-soft: #3a1714;
+    --warn: #f3c46c;
+    --warn-soft: #33270e;
+    --ring: #6fe0cf;
+    color-scheme: dark;
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-fg: var(--accent-soft-fg);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+input[type="range"] {
+  accent-color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

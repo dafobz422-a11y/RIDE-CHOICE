@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
+// The app is fully client-rendered (data lives in the browser), so the
+// scaffold's Cache Components / partial prefetching flags are left off.
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
