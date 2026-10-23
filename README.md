@@ -1,5 +1,7 @@
 # RideChoice
 
+[![CI](https://github.com/dafobz422-a11y/RIDE-CHOICE/actions/workflows/ci.yml/badge.svg)](https://github.com/dafobz422-a11y/RIDE-CHOICE/actions/workflows/ci.yml)
+
 A mobile-first web app where a rider sets ride preferences, compares the 3–4 rides
 that fit **side by side** (every preference checked ✓/✗), books one, watches a
 simulated trip, and then rates whether the ride actually met each preference.
@@ -51,6 +53,10 @@ npm run dev        # http://localhost:3000
 Production build: `npm run build && npm start`.
 
 ## Test
+
+Every push to `main` and every pull request runs all of the checks below on GitHub
+Actions (`.github/workflows/ci.yml`); a failed run uploads the Playwright traces.
+To run them locally:
 
 ```bash
 npm run lint
