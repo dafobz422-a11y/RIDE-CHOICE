@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import { CarBackdrop } from "@/components/car-backdrop";
 import { CheckIcon, ClockIcon, ColumnsIcon, StarIcon, XIcon } from "@/components/icons";
 import { LinkButton, cx } from "@/components/ui";
 
@@ -77,15 +78,19 @@ export default function Landing() {
   const { user, ready } = useAuth();
 
   return (
-    <main className="pt-safe pb-safe flex flex-1 flex-col px-5">
-      <div className="flex items-center gap-2.5 pt-6">
-        <span className="btn-primary flex size-10 items-center justify-center rounded-[14px] font-display text-xl font-semibold text-accent-fg">
-          R
-        </span>
-        <span className="font-display text-xl font-semibold">RideChoice</span>
+    <main className="pb-safe flex flex-1 flex-col px-5">
+      {/* Street scene behind the brand, full-bleed across the column. */}
+      <div className="relative -mx-5">
+        <CarBackdrop />
+        <div className="absolute inset-x-0 top-0 flex items-center gap-2.5 px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)]">
+          <span className="btn-primary flex size-10 items-center justify-center rounded-[14px] font-display text-xl font-semibold text-accent-fg">
+            R
+          </span>
+          <span className="font-display text-xl font-semibold">RideChoice</span>
+        </div>
       </div>
 
-      <section className="mt-10 flex-1">
+      <section className="mt-2 flex-1">
         <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-3 py-1 text-xs font-bold text-accent-soft-fg backdrop-blur">
           <span className="size-1.5 rounded-full bg-accent" /> Ride on your terms
         </p>
@@ -116,7 +121,7 @@ export default function Landing() {
         </ul>
       </section>
 
-      <div className="sticky bottom-0 -mx-5 flex flex-col gap-3 bg-linear-to-t from-bg from-70% to-bg/0 px-5 pt-8 pb-6">
+      <div className="sticky bottom-0 z-30 -mx-5 flex flex-col gap-3 bg-linear-to-t from-bg from-70% to-bg/0 px-5 pt-8 pb-6">
         {ready && user ? (
           <LinkButton href="/home" block>
             Continue as {user.name.split(" ")[0]}

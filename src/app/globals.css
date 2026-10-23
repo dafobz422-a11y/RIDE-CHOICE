@@ -279,3 +279,63 @@ dialog.sheet::backdrop {
   transform-origin: center;
   animation: map-ping 2s ease-out infinite;
 }
+
+/* Front-page car backdrop: cars cross the scene on loop. */
+@keyframes cb-ltr {
+  from {
+    transform: translateX(-35%);
+  }
+  to {
+    transform: translateX(105%);
+  }
+}
+@keyframes cb-rtl {
+  from {
+    transform: translateX(105%);
+  }
+  to {
+    transform: translateX(-35%);
+  }
+}
+@keyframes cb-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+.cb-drive {
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.cb-ltr {
+  animation-name: cb-ltr;
+}
+.cb-rtl {
+  animation-name: cb-rtl;
+}
+.cb-bob {
+  animation: cb-bob 0.9s ease-in-out infinite;
+}
+.cb-window {
+  fill: var(--surface);
+  opacity: 0.9;
+}
+@media (prefers-color-scheme: dark) {
+  .cb-window {
+    fill: var(--warn);
+    opacity: 0.55;
+  }
+}
+/* Reduced motion: cars park at fixed spots instead of driving. */
+@media (prefers-reduced-motion: reduce) {
+  .cb-drive,
+  .cb-bob {
+    animation: none !important;
+  }
+  .cb-drive {
+    transform: translateX(var(--rest));
+  }
+}

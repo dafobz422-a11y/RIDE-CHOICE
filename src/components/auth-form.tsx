@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { AuthError, validateLogin, validateSignup } from "@/lib/auth";
 import { useAuth } from "@/lib/auth-context";
+import { backendKind } from "@/lib/backend";
+import { CarBackdrop } from "./car-backdrop";
 import { Button, Field, PageHeader } from "./ui";
 
 type Mode = "signup" | "login";
@@ -67,10 +69,17 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
   return (
     <main className="flex flex-1 flex-col">
+      <CarBackdrop compact className="-mb-6" />
       <PageHeader
         back="/"
         title={isSignup ? "Create your account" : "Welcome back"}
-        subtitle={isSignup ? "Takes 20 seconds. Your data stays in this browser." : "Log in to compare and book rides."}
+        subtitle={
+          isSignup
+            ? backendKind === "supabase"
+              ? "Takes 20 seconds. Your rides sync across your devices."
+              : "Takes 20 seconds. Your data stays in this browser."
+            : "Log in to compare and book rides."
+        }
       />
       <form noValidate onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 px-4 pb-8">
         {isSignup && (
