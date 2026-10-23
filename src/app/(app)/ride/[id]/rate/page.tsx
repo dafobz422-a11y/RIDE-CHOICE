@@ -179,7 +179,7 @@ function RateForm({ booking, existing }: { booking: Booking; existing: Rating | 
               {[1, 2, 3, 4, 5].map((n) => (
                 <label
                   key={n}
-                  className="flex size-12 cursor-pointer items-center justify-center rounded-xl text-warn hover:bg-surface-2 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--ring)]"
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-xl text-warn hover:bg-surface-2 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--ring)]"
                 >
                   <input
                     type="radio"
@@ -193,7 +193,7 @@ function RateForm({ booking, existing }: { booking: Booking; existing: Rating | 
                   <StarIcon size={30} filled={n <= stars} />
                 </label>
               ))}
-              <span className="num ml-2 self-center text-sm font-semibold text-muted">{stars ? `${stars}/5` : "Not set"}</span>
+              <span className="num ml-2 self-center text-sm font-semibold whitespace-nowrap text-muted">{stars ? `${stars}/5` : "Not set"}</span>
             </div>
             {showErrors && stars === 0 && <p className="mt-2 text-sm font-medium text-danger">Pick 1 to 5 stars.</p>}
           </fieldset>

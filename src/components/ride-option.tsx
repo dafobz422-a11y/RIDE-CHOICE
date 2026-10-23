@@ -221,6 +221,11 @@ export function CompareTable({
               </strong>
             )}
           />
+          <tr className="bg-surface-2">
+            <th scope="colgroup" colSpan={shown.length + 1} className="px-3 py-2 text-left text-xs font-bold tracking-wider text-muted uppercase">
+              Your preferences
+            </th>
+          </tr>
           {keys.map((k) => (
             <Row
               key={k}

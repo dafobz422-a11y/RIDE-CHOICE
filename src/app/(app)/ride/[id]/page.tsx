@@ -75,7 +75,13 @@ function RideView({ booking: initial, rating }: { booking: Booking; rating: Rati
       <PageHeader
         back="/history"
         title={done ? "Ride complete" : "Ride booked"}
-        subtitle={new Date(booking.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+        subtitle={
+          <span className="num">
+            <CheckIcon size={14} className="mr-1 inline align-[-2px] text-success" />
+            Confirmed · #{booking.id.slice(0, 6).toUpperCase()} ·{" "}
+            {new Date(booking.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+          </span>
+        }
       />
       <div className="flex flex-col gap-4 px-4">
         <Card>

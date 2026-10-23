@@ -61,7 +61,7 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <header className="pt-safe px-4 pt-5 pb-3">
+    <header className="px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-3">
       <div className="flex items-start gap-2">
         {back && (
           <Link

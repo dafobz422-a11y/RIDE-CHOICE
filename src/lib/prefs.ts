@@ -6,7 +6,7 @@ export const WAIT_MIN = 2;
 export const WAIT_MAX = 20;
 
 export const DEFAULT_PREFERENCES: Preferences = {
-  maxPrice: 40,
+  maxPrice: 50,
   maxWaitMin: 10,
   vehicleSize: "any",
   quiet: false,

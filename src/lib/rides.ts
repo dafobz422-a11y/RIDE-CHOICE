@@ -149,8 +149,8 @@ function plate(r: () => number): string {
 }
 
 const BASE_FARE = 2.5;
-const PER_KM = 1.15;
-const PER_MIN = 0.32;
+const PER_KM = 0.95;
+const PER_MIN = 0.26;
 const BOOKING_FEE = 1.75;
 
 /** Unscored ride options; `meets`/`matchScore` are filled in by matching. */
