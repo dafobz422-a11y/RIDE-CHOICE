@@ -52,6 +52,10 @@ npm run dev        # http://localhost:3000
 
 Production build: `npm run build && npm start`.
 
+Without Supabase variables the app runs as a **browser-only demo** (accounts and
+rides in localStorage). To use the real database locally, copy `.env.example` to
+`.env.local` and fill in your project's URL and publishable key.
+
 ## Test
 
 Every push to `main` and every pull request runs all of the checks below on GitHub
@@ -93,7 +97,10 @@ No environment variables are needed. Any static-capable Node host works too
 
 ```
 src/lib/types.ts         data model (User, Preferences, RideOption, Booking, Rating)
-src/lib/store.ts         Store interface + LocalStore (localStorage → in-memory fallback)
+src/lib/store.ts         DataStore interface + LocalStore (browser-only demo, in-memory fallback)
+src/lib/supabase-backend.ts  SupabaseStore + Supabase Auth
+src/lib/backend.ts       picks Supabase or the browser-only demo from env vars
+supabase/schema.sql      tables, row-level security, sign-up trigger
 src/lib/auth.ts          sign up / log in / log out, SHA-256 password hashing (Web Crypto)
 src/lib/rides.ts         deterministic ride engine (seeded by pickup + dropoff), 6 tiers
 src/lib/matching.ts      evaluate, filter, sort by priority, near misses, badges
@@ -108,13 +115,18 @@ See `PLAN.md` for the data flow.
 
 ## Assumptions and defaults
 
-- **Mock auth, real hashing.** Passwords are salted (per user, random 16 bytes)
-  and hashed with SHA-256 via Web Crypto. Accounts and the session live in this
-  browser's localStorage. This is a demo, not production security: a real
-  backend should use a slow KDF (Argon2/bcrypt) on the server.
-- **Protected routes are guarded client-side.** All data lives in the browser,
-  so there is nothing for the server to protect. Signed-out visitors to any app
-  screen are sent to `/login`.
+- **Two backends.** With Supabase configured (production), accounts use Supabase
+  Auth and data lives in Postgres behind row-level security. Without it (local
+  dev, CI, unit tests) the browser-only demo hashes passwords with salted SHA-256
+  via Web Crypto and keeps everything in localStorage; fine for a demo, not for
+  production security.
+- **Protected routes are guarded client-side.** Signed-out visitors to any app
+  screen are sent to `/login`. Data is protected by the database's row-level
+  security, not by the page guard.
+- **Sign-up is instant** because "Confirm email" is off in Supabase (its built-in
+  mailer allows only a few emails an hour). Turn it on with a custom SMTP provider
+  for a real launch; the app already tells riders to check their inbox when
+  Supabase asks for confirmation.
 - **Hard and soft preferences.** Max price, max pickup wait, vehicle size (when
   not "Any") and wheelchair access (when on) are hard filters. Quiet ride (when
   on), temperature (when not "Neutral") and eco (when on) only affect the match
@@ -151,7 +163,9 @@ See `PLAN.md` for the data flow.
   "now" and says so. Prices are the same as riding now.
 - **Re-rating:** opening the rate screen for a rated ride pre-fills the answers,
   and submitting again replaces the rating.
-- **Reset demo data** wipes every RideChoice key in this browser's localStorage.
+- **Reset demo data** (browser-only mode) wipes every RideChoice key in this browser.
+  With Supabase it becomes **Delete my ride data**: preferences, rides and ratings
+  are deleted and the login stays.
 - **Design:** Sora (geometric sans, for headlines) and Plus Jakarta Sans (body,
   prices and times, with tabular numbers) via `next/font`. One violet accent with
   neutrals tinted toward it, a soft aurora wash behind page tops, tinted shadows
@@ -164,31 +178,32 @@ See `PLAN.md` for the data flow.
 - **E2E browser:** the iPhone 13 profile (viewport, DPR, touch, mobile UA) runs
   in Chromium so the suite works the same on Windows, macOS and Linux CI.
 
-## Swapping localStorage for a real database
+## Database (Supabase)
 
-All persistence goes through the async `Store` interface in `src/lib/store.ts`.
-The UI only imports the `store` instance, so changing backends means one new
-class and a one-line swap:
+Production runs on Supabase. The pieces:
 
-```ts
-// src/lib/store.ts
-export const store: Store = new LocalStore();      // today
-export const store: Store = new SupabaseStore(sb); // later
-```
+- `supabase/schema.sql`: tables `profiles`, `preferences`, `drafts`, `bookings`
+  and `ratings` (the app's JSON in a `data` column plus ownership columns),
+  row-level security limiting every row to its owner, and a trigger that creates
+  the profile at sign-up. Run it once in the SQL Editor; it is safe to re-run.
+- `src/lib/supabase-backend.ts`: `SupabaseStore` (implements `DataStore`) and
+  Supabase Auth (implements `AuthApi`), including password reset.
+- `src/lib/backend.ts`: uses Supabase when `NEXT_PUBLIC_SUPABASE_URL` and
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are set, otherwise the browser-only demo.
+  Both values are public by design; never put the secret / service_role key in
+  the app.
 
-**Supabase.** Create tables `users` (or use Supabase Auth), `preferences
-(user_id pk, data jsonb)`, `drafts (user_id pk, data jsonb)`, `bookings (id pk,
-user_id, data jsonb, status, created_at)` and `ratings (booking_id pk, data jsonb)`,
-with row-level security on `user_id = auth.uid()`. Then implement each `Store`
-method with the Supabase client, for example
-`getBooking: (id) => sb.from("bookings").select("data").eq("id", id).maybeSingle()`.
-Replace `src/lib/auth.ts` with Supabase Auth (`signUp`, `signInWithPassword`,
-`signOut`) and have `getSession` read `sb.auth.getSession()`.
+**Setting up a new project:** create a Supabase project, run `supabase/schema.sql`,
+set the two variables in Vercel (Production, Preview, Development) and in
+`.env.local`, set Authentication → URL Configuration → Site URL to the live URL,
+and add `https://<your-domain>/**` and `http://localhost:3000/**` to Redirect URLs
+so password-reset links work.
 
-**Prisma.** Model the same tables in `schema.prisma`. Expose them through route
-handlers (`src/app/api/*/route.ts`) or Server Functions, and write an
-`ApiStore implements Store` that calls them with `fetch`. Move password hashing to the
-server with bcrypt or Argon2, keep the session in an httpOnly cookie, and enforce
-protected routes in `proxy.ts` as well.
+**Tests and the database:** the Playwright config always builds the browser-only
+demo, so local and CI runs never touch Supabase. Running the e2e suite against
+the live site (`E2E_BASE_URL=…`) does create test riders with `@example.com`
+emails; remove them under Authentication → Users.
 
-`createMemoryStore()` stays useful for unit tests either way.
+Another backend (for example Prisma behind route handlers) would be one more
+class implementing `DataStore` and `AuthApi`, selected in `backend.ts`.
+`createMemoryStore()` stays useful for unit tests.
