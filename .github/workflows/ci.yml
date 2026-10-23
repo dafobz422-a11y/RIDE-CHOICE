@@ -30,7 +30,8 @@ jobs:
         run: npm run lint
 
       - name: Type-check
-        run: npx tsc --noEmit
+        # Generates the route types (e.g. LayoutProps) a fresh checkout lacks.
+        run: npm run typecheck
 
       - name: Unit tests
         run: npm test

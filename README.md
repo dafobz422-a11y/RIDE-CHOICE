@@ -60,7 +60,7 @@ To run them locally:
 
 ```bash
 npm run lint
-npx tsc --noEmit
+npm run typecheck             # next typegen + tsc --noEmit (works on a fresh clone)
 npm test                      # Vitest unit tests for src/lib (matching, scoring, rides, rating, store, auth)
 npx playwright install chromium   # first time only
 npx playwright test           # e2e happy path at an iPhone 13 viewport
