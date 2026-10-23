@@ -9,6 +9,7 @@ import { ANSWER_LABEL, isRatingComplete, summarizeRating } from "@/lib/rating";
 import { store } from "@/lib/store";
 import type { Booking, PrefAnswer, PrefKey, Rating } from "@/lib/types";
 import { StarIcon } from "@/components/icons";
+import { haptic, useToast } from "@/components/feedback";
 import { ANSWER_STYLE, AnswerIcon, RatingSummaryCard } from "@/components/rating-summary";
 import { Button, Card, EmptyState, FullPageSpinner, LinkButton, PageHeader, cx } from "@/components/ui";
 
@@ -55,6 +56,7 @@ export default function RatePage() {
 }
 
 function RateForm({ booking, existing }: { booking: Booking; existing: Rating | null }) {
+  const toast = useToast();
   const keys = booking.activeKeys;
   const [answers, setAnswers] = useState<Partial<Record<PrefKey, PrefAnswer>>>(existing?.perPreference ?? {});
   const [notes, setNotes] = useState<Partial<Record<PrefKey, string>>>(existing?.notes ?? {});
@@ -65,6 +67,7 @@ function RateForm({ booking, existing }: { booking: Booking; existing: Rating | 
 
   const complete = isRatingComplete(answers, keys, stars);
   const missing = keys.filter((k) => !answers[k]);
+  const answered = keys.length - missing.length;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -86,6 +89,8 @@ function RateForm({ booking, existing }: { booking: Booking; existing: Rating | 
       createdAt: new Date().toISOString(),
     };
     await store.saveRating(rating);
+    haptic([10, 40, 20]);
+    toast("Rating saved");
     setSubmitted(rating);
     window.scrollTo({ top: 0 });
   }
@@ -143,7 +148,10 @@ function RateForm({ booking, existing }: { booking: Booking; existing: Rating | 
                           name={`answer-${k}`}
                           value={a}
                           checked={checked}
-                          onChange={() => setAnswers((s) => ({ ...s, [k]: a }))}
+                          onChange={() => {
+                            haptic(5);
+                            setAnswers((s) => ({ ...s, [k]: a }));
+                          }}
                           className="sr-only"
                         />
                         {checked && <AnswerIcon answer={a} />}
@@ -186,11 +194,16 @@ function RateForm({ booking, existing }: { booking: Booking; existing: Rating | 
                     name="stars"
                     value={n}
                     checked={stars === n}
-                    onChange={() => setStars(n)}
+                    onChange={() => {
+                      haptic(5);
+                      setStars(n);
+                    }}
                     className="sr-only"
                     aria-label={`${n} star${n === 1 ? "" : "s"}`}
                   />
-                  <StarIcon size={30} filled={n <= stars} />
+                  <span key={n === stars ? `on-${stars}` : n} className={n === stars ? "animate-pop inline-flex" : "inline-flex"}>
+                    <StarIcon size={30} filled={n <= stars} />
+                  </span>
                 </label>
               ))}
               <span className="num ml-2 self-center text-sm font-semibold whitespace-nowrap text-muted">{stars ? `${stars}/5` : "Not set"}</span>
@@ -206,6 +219,17 @@ function RateForm({ booking, existing }: { booking: Booking; existing: Rating | 
               {missing.length > 0 && stars === 0 ? " and add a star rating" : ""}.
             </p>
           )}
+          <div className="flex items-center gap-2 text-xs font-semibold text-muted">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2" aria-hidden>
+              <div
+                className="h-full rounded-full bg-accent transition-[width] duration-300"
+                style={{ width: `${((answered + (stars ? 1 : 0)) / (keys.length + 1)) * 100}%` }}
+              />
+            </div>
+            <span className="num">
+              {answered}/{keys.length} answered{stars ? " · stars set" : ""}
+            </span>
+          </div>
           <Button type="submit" block disabled={busy}>
             Submit rating
           </Button>

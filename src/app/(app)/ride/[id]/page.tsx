@@ -1,16 +1,18 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { powertrainLabel } from "@/lib/describe";
 import { useAsync } from "@/lib/hooks";
 import { formatPrice } from "@/lib/prefs";
 import { store } from "@/lib/store";
-import { STAGES, STAGE_LABEL, stageAt } from "@/lib/trip";
+import { STAGES, STAGE_LABEL, tripProgress } from "@/lib/trip";
 import type { Booking, BookingStatus, Rating } from "@/lib/types";
 import { CheckIcon, FlagIcon, PinIcon, StarIcon } from "@/components/icons";
+import { haptic } from "@/components/feedback";
 import { RatingSummaryCard } from "@/components/rating-summary";
+import { TripMap } from "@/components/trip-map";
 import { Button, Card, EmptyState, FullPageSpinner, LinkButton, PageHeader, cx } from "@/components/ui";
 
 const STAGE_HINT: Record<BookingStatus, (b: Booking) => string> = {
@@ -51,8 +53,15 @@ export default function RidePage() {
 function RideView({ booking: initial, rating }: { booking: Booking; rating: Rating | null }) {
   const [booking, setBooking] = useState(initial);
   const [now, setNow] = useState(() => Date.now());
-  const stage = stageAt(booking.createdAt, now, booking.status);
+  const { stage, fraction, secondsLeft } = tripProgress(booking.createdAt, now, booking.status);
   const done = stage === "completed";
+  const prevStage = useRef(stage);
+
+  // A light buzz whenever the trip moves to its next stage.
+  useEffect(() => {
+    if (prevStage.current !== stage) haptic(stage === "completed" ? [15, 60, 15] : 10);
+    prevStage.current = stage;
+  }, [stage]);
 
   useEffect(() => {
     if (done) return;
@@ -84,8 +93,22 @@ function RideView({ booking: initial, rating }: { booking: Booking; rating: Rati
         }
       />
       <div className="flex flex-col gap-4 px-4">
+        <TripMap stage={stage} fraction={fraction} label={done ? "Arrived" : `${STAGE_LABEL[stage]} · next in ${secondsLeft}s`} />
         <Card>
-          <ol aria-label="Trip progress" className="flex flex-col gap-0">
+          <div
+            className="mb-4 h-1.5 overflow-hidden rounded-full bg-surface-2"
+            role="progressbar"
+            aria-label="Trip progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(((STAGES.indexOf(stage) + (done ? 0 : fraction)) / (STAGES.length - 1)) * 100)}
+          >
+            <div
+              className="h-full rounded-full bg-accent transition-[width] duration-300 ease-linear"
+              style={{ width: `${Math.min(100, ((STAGES.indexOf(stage) + (done ? 0 : fraction)) / (STAGES.length - 1)) * 100)}%` }}
+            />
+          </div>
+          <ol aria-label="Trip stages" className="flex flex-col gap-0">
             {STAGES.map((s, i) => {
               const reached = i <= stageIndex;
               const current = i === stageIndex;

@@ -40,3 +40,33 @@ export const ANSWER_LABEL: Record<PrefAnswer, string> = {
   partly: "Partly",
   no: "No",
 };
+
+export interface HistoryStats {
+  rides: number;
+  rated: number;
+  /** Mean stars over rated rides, or null when none are rated. */
+  avgStars: number | null;
+  /** Share of snapshotted preferences answered "yes", 0–100, or null. */
+  metPct: number | null;
+}
+
+export function historyStats(items: { activeKeys: PrefKey[]; rating: Rating | null }[]): HistoryStats {
+  let rated = 0;
+  let stars = 0;
+  let met = 0;
+  let total = 0;
+  for (const { activeKeys, rating } of items) {
+    if (!rating) continue;
+    rated++;
+    stars += rating.stars;
+    const s = summarizeRating(rating.perPreference, activeKeys);
+    met += s.met;
+    total += s.total;
+  }
+  return {
+    rides: items.length,
+    rated,
+    avgStars: rated ? Math.round((stars / rated) * 10) / 10 : null,
+    metPct: total ? Math.round((met / total) * 100) : null,
+  };
+}

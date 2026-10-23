@@ -30,13 +30,19 @@ test("sign up → preferences → compare → book → trip → rate → history
   // Onboarding preferences
   await expect(page).toHaveURL(/\/preferences$/);
   await expect(page.getByRole("heading", { name: "Set your ride preferences" })).toBeVisible();
+  // The live preview reacts as the must-haves change.
+  const preview = page.getByRole("region", { name: "Live preview" });
+  await page.getByLabel("Max price").fill("8");
+  await expect(preview).toContainText("0 of 6 rides fit");
   await page.getByLabel("Max price").fill("60");
+  await expect(preview).not.toContainText("0 of 6 rides fit");
   await page.getByLabel("Max pickup wait").fill("12");
   await page.getByRole("switch", { name: /Quiet ride/ }).click();
   await page.getByRole("switch", { name: /Eco vehicle/ }).click();
-  await page.getByText("Cool", { exact: true }).click();
-  await page.getByText("Comfort", { exact: true }).click();
+  await page.getByRole("group", { name: "Cabin temperature" }).getByText("Cool", { exact: true }).click();
+  await page.getByRole("group", { name: "Sort rides by" }).getByText("Comfort", { exact: true }).click();
   await page.getByRole("button", { name: "Save and plan a ride" }).click();
+  await expect(page.getByTestId("toast")).toContainText("Preferences saved");
 
   // New ride: price, wait, quiet, temperature, eco → 5 active preferences
   await expect(page).toHaveURL(/\/ride\/new$/);
@@ -69,12 +75,29 @@ test("sign up → preferences → compare → book → trip → rate → history
   await expect(page).toHaveURL(/\/ride\/compare$/);
   await expect(options).toHaveCount(count);
 
-  // Book the first option
+  // Adjust must-haves in a sheet: live count, then dismiss without changing anything
+  await page.getByRole("button", { name: "Adjust" }).click();
+  const tune = page.getByRole("dialog", { name: "Adjust must-haves" });
+  await expect(tune).toBeVisible();
+  await tune.getByLabel("Max price").fill("8");
+  await expect(tune).toContainText("0 of 6 rides would fit");
+  await tune.getByRole("button", { name: "Close" }).click();
+  await expect(tune).toBeHidden();
+  await expect(options).toHaveCount(count);
+
+  // Book the first option: a confirm sheet, cancel once, then confirm
   await options.first().getByRole("button", { name: /^Book this ride/ }).click();
+  const confirm = page.getByRole("dialog", { name: "Confirm your ride" });
+  await expect(confirm).toBeVisible();
+  await confirm.getByRole("button", { name: "Keep comparing" }).click();
+  await expect(confirm).toBeHidden();
+  await expect(page).toHaveURL(/\/ride\/compare$/);
+  await options.first().getByRole("button", { name: /^Book this ride/ }).click();
+  await confirm.getByRole("button", { name: /^Confirm booking/ }).click();
   await expect(page).toHaveURL(/\/ride\/(?!compare$|new$)[^/]+$/);
   await expect(page.getByRole("heading", { name: "Ride booked" })).toBeVisible();
   const rideUrl = page.url();
-  await expect(page.getByRole("list", { name: "Trip progress" }).getByText("Driver assigned")).toBeVisible();
+  await expect(page.getByRole("list", { name: "Trip stages" }).getByText("Driver assigned")).toBeVisible();
 
   // Skip to end
   await page.getByRole("button", { name: "Skip to end" }).click();
@@ -97,6 +120,7 @@ test("sign up → preferences → compare → book → trip → rate → history
   await page.getByPlaceholder("What happened?").first().fill("Right on budget");
   await page.getByLabel("4 stars").check({ force: true });
   await page.getByRole("button", { name: "Submit rating" }).click();
+  await expect(page.getByTestId("toast")).toContainText("Rating saved");
   await expect(page.getByTestId("rating-summary")).toHaveText("Met 4 of 5 preferences");
 
   // History shows the ride with the right summary, and survives a reload
@@ -104,6 +128,7 @@ test("sign up → preferences → compare → book → trip → rate → history
   await expect(page).toHaveURL(/\/history$/);
   const item = page.getByTestId("history-item");
   await expect(item).toHaveCount(1);
+  await expect(page.getByRole("definition").filter({ hasText: "%" })).toHaveText("80%");
   await expect(item).toContainText("Met 4 of 5 preferences");
   await page.reload();
   await expect(item).toContainText("Met 4 of 5 preferences");

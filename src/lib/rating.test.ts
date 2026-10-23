@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { isRatingComplete, summarizeRating } from "./rating";
-import { STAGE_MS, stageAt } from "./trip";
+import { historyStats, isRatingComplete, summarizeRating } from "./rating";
+import type { Rating } from "./types";
+import { STAGE_MS, stageAt, tripProgress } from "./trip";
 
 describe("summarizeRating", () => {
   it("counts yes as met and reports partly and missed separately", () => {
@@ -44,5 +45,47 @@ describe("stageAt", () => {
   it("never goes backwards from a stored status", () => {
     expect(stageAt(start, t0, "completed")).toBe("completed");
     expect(stageAt(start, t0, "on_trip")).toBe("on_trip");
+  });
+});
+
+describe("tripProgress", () => {
+  const start = "2026-01-01T00:00:00.000Z";
+  const t0 = Date.parse(start);
+
+  it("reports the fraction and seconds left within a stage", () => {
+    expect(tripProgress(start, t0, "assigned")).toEqual({ stage: "assigned", fraction: 0, secondsLeft: 3 });
+    expect(tripProgress(start, t0 + STAGE_MS * 1.5, "assigned")).toEqual({ stage: "arriving", fraction: 0.5, secondsLeft: 2 });
+  });
+
+  it("is complete once completed, by time or by skipping", () => {
+    expect(tripProgress(start, t0 + STAGE_MS * 3, "assigned")).toEqual({ stage: "completed", fraction: 1, secondsLeft: 0 });
+    expect(tripProgress(start, t0, "completed").stage).toBe("completed");
+  });
+
+  it("holds a stored stage that is ahead of the clock", () => {
+    expect(tripProgress(start, t0 + 500, "on_trip")).toMatchObject({ stage: "on_trip", fraction: 0 });
+  });
+});
+
+describe("historyStats", () => {
+  const rating = (stars: number, perPreference: Rating["perPreference"]): Rating => ({
+    bookingId: "b",
+    perPreference,
+    notes: {},
+    stars,
+    createdAt: "",
+  });
+
+  it("averages stars and preference hit rate over rated rides only", () => {
+    const s = historyStats([
+      { activeKeys: ["price", "wait"], rating: rating(5, { price: "yes", wait: "yes" }) },
+      { activeKeys: ["price", "wait"], rating: rating(2, { price: "no", wait: "partly" }) },
+      { activeKeys: ["price"], rating: null },
+    ]);
+    expect(s).toEqual({ rides: 3, rated: 2, avgStars: 3.5, metPct: 50 });
+  });
+
+  it("returns nulls with nothing rated", () => {
+    expect(historyStats([])).toEqual({ rides: 0, rated: 0, avgStars: null, metPct: null });
   });
 });

@@ -102,7 +102,7 @@ export function OptionCard({
       data-testid="ride-option"
       aria-label={`${o.tier}, option ${position} of ${count}`}
       className={cx(
-        "flex w-[80%] max-w-[330px] shrink-0 snap-start flex-col rounded-3xl border bg-surface p-4",
+        "flex w-full flex-col rounded-3xl border bg-surface p-4",
         eligible ? "border-line" : "border-dashed border-danger/60",
       )}
     >

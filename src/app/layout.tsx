@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
+import { ToastProvider } from "@/components/feedback";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -35,9 +36,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${display.variable} ${body.variable} h-full antialiased`}>
       <body className="min-h-full">
         <AuthProvider>
-          <div className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col bg-bg sm:border-x sm:border-line">
-            {children}
-          </div>
+          <ToastProvider>
+            <div className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col bg-bg sm:border-x sm:border-line">
+              {children}
+            </div>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
